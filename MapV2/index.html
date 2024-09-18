@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SC 3.24 Hauling Tool v2 by SigmaPrimer</title>
+    <!-- Include Plotly.js via CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Include the external JavaScript files -->
+    <script type="module" src="app.js"></script>
+    <!-- Import Custom Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Updated Styles -->
+    <style>
+ /* Apply box-sizing globally */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Global Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #000; /* Black background */
+    color: #fff; /* White text */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row; /* Ensure items are laid out horizontally */
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Sidebar Styling */
+#sidebar {
+    width: 600px;
+    background-color: #001f3f; /* Navy blue */
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+/* Map Styling */
+#map {
+    flex: 1 1 auto; /* Allow the map to grow and fill the remaining space */
+    height: 100vh;
+    width: 100%; /* Ensure the map fills its container */
+    overflow: hidden;
+}
+
+/* Headings */
+h1, h2, h3, h4 {
+    color: #ffffff;
+    text-shadow: 2px 2px 4px #000000;
+}
+
+/* Mission Form */
+.mission-form, .starting-location {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #222;
+    border-radius: 5px;
+}
+
+/* Labels and Inputs */
+.mission-form label, .starting-location label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.mission-form select, .mission-form input, .starting-location select {
+    width: 100%;
+    padding: 10px; /* Increased padding */
+    margin-bottom: 10px;
+    border: 2px solid #555; /* Clearer borders */
+    border-radius: 4px;
+    background-color: #333;
+    color: #fff;
+    font-size: 14px;
+}
+
+.mission-form select:focus, .mission-form input:focus, .starting-location select:focus {
+    outline: none;
+    border-color: #2ECC71; /* Highlight on focus */
+    box-shadow: 0 0 5px #2ECC71;
+}
+
+/* Buttons */
+.mission-form button, .starting-location button {
+    padding: 12px 20px; /* Increased padding */
+    background-color: #2ECC71;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.mission-form button:hover, .starting-location button:hover {
+    background-color: #27AE60;
+}
+
+/* Cargo Entry Styling */
+.cargo-entry {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.cargo-entry input[type="text"],
+.cargo-entry input[type="number"],
+.cargo-entry select {
+    margin-right: 10px;
+    flex: 1;
+    padding: 8px;
+    border: 2px solid #555;
+    border-radius: 4px;
+    background-color: #333;
+    color: #fff;
+    font-size: 14px;
+}
+
+.cargo-entry input[type="text"]:focus,
+.cargo-entry input[type="number"]:focus,
+.cargo-entry select:focus {
+    outline: none;
+    border-color: #2ECC71;
+    box-shadow: 0 0 5px #2ECC71;
+}
+
+/* Remove Cargo Button Styling */
+.cargo-entry button {
+    background-color: #E74C3C;
+    padding: 10px 15px; /* Increased padding for better sizing */
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px; /* Increased font size */
+    transition: background-color 0.3s;
+    min-width: 120px; /* Ensure button is wide enough for text */
+    text-align: center;
+}
+
+.cargo-entry button:hover {
+    background-color: #C0392B;
+}
+
+/* Add Location Button */
+.add-location-button {
+    padding: 10px 15px; /* Increased padding */
+    background-color: #2980B9;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    margin-bottom: 10px;
+}
+
+.add-location-button:hover {
+    background-color: #1F6391;
+}
+
+/* Location Entry Styling */
+.location-entry {
+    border: 1px solid #444;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    background-color: #333;
+}
+
+.location-entry h4 {
+    margin-top: 0;
+    font-size: 16px;
+}
+
+.location-entry button {
+    background-color: #E74C3C;
+    padding: 10px 15px; /* Increased padding */
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.location-entry button:hover {
+    background-color: #C0392B;
+}
+
+/* Loading Bar Styling */
+#loadingBarContainer {
+    width: 100%;
+    background-color: #333;
+    border-radius: 5px;
+    margin-top: 15px;
+    display: none; /* Initially hidden until activated */
+}
+
+#loadingBar {
+    width: 0%;
+    height: 20px;
+    background-color: #2ECC71;
+    border-radius: 5px;
+    transition: width 0.2s;
+}
+
+/* Algorithm Parameters Styling */
+#algorithmParameters {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 1000;
+    background-color: #222;
+    border-radius: 5px;
+    padding: 20px; /* Increased padding for better containment */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5); /* Added shadow for depth */
+    overflow: hidden; /* Prevent content from spilling out */
+}
+
+#algorithmParameters h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 18px;
+    color: #2ECC71; /* Enhanced visibility */
+}
+
+#algorithmParameters label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+#algorithmParameters input {
+    width: 100%;
+    padding: 10px; /* Increased padding */
+    margin-bottom: 10px;
+    border: 2px solid #555;
+    border-radius: 4px;
+    background-color: #333;
+    color: #fff;
+    font-size: 14px;
+}
+
+#algorithmParameters input:focus {
+    outline: none;
+    border-color: #2ECC71;
+    box-shadow: 0 0 5px #2ECC71;
+}
+
+#algorithmParameters p {
+    font-size: 12px;
+    color: #bbb;
+    margin-top: -8px;
+    margin-bottom: 10px;
+}
+
+/* Calculate Route Button Styling */
+#algorithmParameters button {
+    padding: 12px 20px;
+    background-color: #3498DB;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    width: 100%;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+    align-self: center;
+}
+
+#algorithmParameters button:hover {
+    background-color: #2980B9;
+}
+
+/* Added Missions Box */
+.mission-list-container {
+    background-color: #222;
+    border: 2px solid #555;
+    border-radius: 5px;
+    padding: 15px;
+    max-height: 25vh;
+    overflow-y: auto;
+}
+
+.mission-list-container h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #2ECC71; /* Enhanced visibility */
+}
+
+.mission-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mission-list li {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #333;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.mission-list li strong {
+    color: #FFFFFF;
+}
+
+/* Summary Section */
+#summary {
+    padding: 15px;
+    background-color: #222;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+#summary h3 {
+    margin-top: 0;
+}
+
+#summary p, #summary ul {
+    margin: 5px 0;
+}
+
+#summary ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #111;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 10px;
+    border: 2px solid #111;
+}
+
+/* Route Length Graph Styling */
+#routeLengthGraphContainer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    height: 300px;
+    background-color: #222;
+    border: 2px solid #555;
+    border-radius: 5px;
+    padding: 10px;
+    box-sizing: border-box;
+    z-index: 1000; /* Ensure it stays on top */
+    color: #fff;
+}
+
+#routeLengthGraphContainer h2 {
+    text-align: center;
+    font-size: 16px;
+    margin: 0 0 10px 0;
+    color: #2ECC71;
+}
+
+#routeLengthGraph {
+    width: 100%;
+    height: 100%;
+}
+</style>
+</head>
+<body>
+    <div id="sidebar">
+        <h1>SC Cargo Hauling Tool v2 by SigmaPrimer</h1>
+        <!-- DELETE AFTER TESTING -->
+        <!-- Add Example Missions Button -->
+        <button id="loadExampleMissionsButton" style="background-color: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-bottom: 20px;" onclick="loadExampleMissions()">Load Example Missions</button>
+        <!-- DELETE AFTER TESTING -->
+        
+        <!-- Starting Location Selection -->
+        <div class="starting-location">
+            <h2>Starting Location</h2>
+            <label for="startingLocation">Select Starting Location:</label>
+            <select id="startingLocation">
+                <option value="">-- Select Starting Location --</option>
+                <!-- Options will be populated dynamically -->
+            </select>
+        </div>
+        
+        <!-- Mission Input Form -->
+        <h2>Add Cargo Hauling Missions</h2>
+        <div class="mission-form">
+            <label for="missionType">Mission Type:</label>
+            <select id="missionType">
+                <option value="">-- Select Mission Type --</option>
+                <option value="direct">Direct</option>
+                <option value="multipleDropOff">Multiple Drop Off</option>
+                <option value="multiplePickUp">Multiple Pick Up</option>
+            </select>
+
+            <div id="missionDetails">
+                <!-- Dynamic mission-specific inputs will appear here -->
+            </div>
+
+            <button id="addMissionButton">Add Mission</button>
+        </div>
+
+        <!-- Algorithm Parameters -->
+        <h2>Algorithm Parameters</h2>
+        <div id="algorithmParameters">
+            <h2>GA Parameters</h2>
+            <label for="populationSize">Population Size:</label>
+            <input type="number" id="populationSize" value="100" min="10" max="1000">
+            <p>Determines the number of candidate solutions in each generation. Higher values may find better solutions but take longer.</p>
+
+            <label for="generations">Generations:</label>
+            <input type="number" id="generations" value="200" min="10" max="1000">
+            <p>Number of iterations the algorithm runs. More generations allow better optimization but increase computation time.</p>
+
+            <label for="mutationRate">Mutation Rate:</label>
+            <input type="number" id="mutationRate" value="0.1" min="0" max="1" step="0.01">
+            <p>The probability of random changes in the offspring. Higher rates increase diversity but may disrupt good solutions.</p>
+
+            <!-- Calculate Route Button -->
+            <button id="calculateRouteButton">Calculate Optimal Route</button>
+
+            <!-- Loading bar container -->
+            <div id="loadingBarContainer">
+                <div id="loadingBar"></div>
+            </div>
+        </div>
+
+        <!-- List of Added Missions -->
+        <div class="mission-list-container">
+            <h2>Added Missions</h2>
+            <ul class="mission-list" id="missionList">
+                <!-- List of added missions will appear here -->
+            </ul>
+        </div>
+
+        <!-- Route Summary -->
+        <div id="summary">
+            <h3>Route Summary</h3>
+            <p id="totalDistance">Total Distance: 0 Gm</p>
+            <p id="totalReward">Total Profit: 0 aUEC</p>
+            <h4>Route Details:</h4>
+            <ul id="routeDetails">
+                <!-- Detailed route information will appear here -->
+            </ul>
+        </div>
+    </div>
+    <div id="map"></div>
+
+    <!-- Route Length Graph Container -->
+    <div id="routeLengthGraphContainer">
+        <h2>Route Length Over Generations</h2>
+        <div id="routeLengthGraph"></div>
+    </div>
+</body>
+</html>

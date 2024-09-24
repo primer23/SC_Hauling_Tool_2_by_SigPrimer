@@ -1,0 +1,3725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SC 3.24 Hauling Tool v2 by SigmaPrimer</title>
+    <!-- Include Plotly.js via CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Import Custom Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Updated Styles -->
+    <style>
+.title {
+    font-size: 25px;
+    font-weight: bold;
+    margin-bottom: 20px;
+
+
+}
+    /* Apply box-sizing globally */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Global Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #000; /* Black background */
+    color: #fff; /* White text */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row; /* Ensure items are laid out horizontally */
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Sidebar Styling */
+#sidebar {
+    width: 600px;
+    background-color: #141414; /* Navy blue */
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+/* Right Sidebar Styling */
+#rightSidebar {
+    width: 500px;
+    background-color: #141414; /* Navy blue */
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+/* Main Content Area */
+#mainContent {
+    flex: 1; /* Take up remaining horizontal space between sidebars */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Map Styling */
+#map {
+    flex: 1; /* Adjust to take up available vertical space */
+    overflow: hidden;
+    position: relative;
+}
+
+/* Bottom Container for Graph and GA Parameters */
+#bottomContainer {
+    display: flex;
+    flex-direction: row;
+    background-color: #222;
+    border-top: 2px solid #555;
+    box-sizing: border-box;
+    color: #fff;
+    overflow: hidden;
+    max-height: 500px; /* Adjust based on desired height */
+}
+
+/* Route Length Graph Container */
+#routeLengthGraphContainer {
+    flex: 1; /* Adjusted to take up more space */
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#routeLengthGraphContainer h2 {
+    text-align: center;
+    font-size: 14px; /* Smaller font size */
+    margin: 0 0 10px 0;
+    color: #2ECC71;
+}
+
+#routeLengthGraph {
+    width: 100%;
+    flex: 1;
+}
+
+/* Adjust Algorithm Parameters Styling */
+#algorithmParameters {
+    flex: 1; /* Adjusted to fit next to the graph */
+    padding: 10px; /* Reduced padding */
+    box-sizing: border-box;
+    border-left: 2px solid #555;
+    overflow-y: auto;
+}
+
+#algorithmParameters h2 {
+    margin-top: 0;
+    margin-bottom: 10px; /* Reduced margin */
+    text-align: center;
+    font-size: 16px; /* Smaller font size */
+    color: #2ECC71;
+}
+
+#algorithmParameters label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 12px; /* Smaller text */
+}
+
+#algorithmParameters input {
+    width: 100%;
+    padding: 5px; /* Reduced padding */
+    margin-bottom: 10px;
+    border: 2px solid #555;
+    border-radius: 4px;
+    background-color: #333;
+    color: #fff;
+    font-size: 12px; /* Smaller text */
+}
+
+#algorithmParameters input:focus {
+    outline: none;
+    border-color: #2ECC71;
+    box-shadow: 0 0 5px #2ECC71;
+}
+
+#algorithmParameters p {
+    font-size: 10px; /* Smaller text */
+    color: #bbb;
+    margin-top: -8px;
+    margin-bottom: 10px;
+}
+
+/* Calculate Route Button Styling */
+#algorithmParameters button {
+    padding: 5px 10px; /* Slimmer padding */
+    background-color: #3498DB;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 3px; /* Smaller border radius */
+    font-size: 12px; /* Smaller text */
+    width: 100%;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+    align-self: center;
+    font-weight: bold; /* Bold text */
+}
+
+#algorithmParameters button:hover {
+    background-color: #2980B9;
+}
+
+/* Loading Bar Styling */
+#loadingBarContainer {
+    width: 100%;
+    background-color: #333;
+    border-radius: 5px;
+    margin-top: 10px; /* Reduced margin */
+    display: none;
+}
+
+#loadingBar {
+    width: 0%;
+    height: 10px; /* Reduced height */
+    background-color: #2ECC71;
+    border-radius: 5px;
+    transition: width 0.2s;
+}
+
+/* Headings */
+h1, h2, h3, h4 {
+    color: #ffffff;
+    text-shadow: 2px 2px 4px #000000;
+}
+
+h1 {
+    font-size: 20px; /* Smaller main heading */
+}
+
+h2 {
+    font-size: 16px; /* Adjusted as needed */
+}
+
+h3, h4 {
+    font-size: 14px; /* Smaller headings */
+}
+
+/* Mission Form */
+.mission-form, .starting-location {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #222;
+    border-radius: 5px;
+}
+
+/* Labels and Inputs */
+.mission-form label, .starting-location label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 12px; /* Smaller text */
+}
+
+.mission-form select, .mission-form input, .starting-location select {
+    width: 100%;
+    padding: 5px; /* Reduced padding */
+    margin-bottom: 10px;
+    border: 2px solid #555;
+    border-radius: 4px;
+    background-color: #333;
+    color: #fff;
+    font-size: 12px; /* Smaller text */
+}
+
+.mission-form select:focus, .mission-form input:focus, .starting-location select:focus {
+    outline: none;
+    border-color: #2ECC71;
+    box-shadow: 0 0 5px #2ECC71;
+}
+
+/* Buttons */
+.mission-form button, .starting-location button {
+    padding: 5px 10px; /* Slimmer padding */
+    background-color: #2ECC71;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 3px; /* Smaller border radius */
+    font-size: 12px; /* Smaller text */
+    transition: background-color 0.3s;
+    font-weight: bold; /* Bold text */
+}
+
+.mission-form button:hover, .starting-location button:hover {
+    background-color: #27AE60;
+}
+
+/* Cargo Entry Styling */
+.cargo-entry {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Reduced gap */
+    margin-bottom: 10px; /* Space below each cargo entry */
+}
+
+/* Input Fields Styling */
+.cargo-entry input[type="text"],
+.cargo-entry input[type="number"],
+.cargo-entry select {
+    padding: 5px; /* Reduced padding */
+    size: 10; /* Smaller size */
+    border: 2px solid #555;
+    border-radius: 6px;
+    background-color: #333;
+    color: #fff;
+    font-size: 12px; /* Smaller text */
+}
+
+/* Remove Cargo Button Styling */
+.cargo-entry button {
+    background-color: #973434;
+    padding: 7px 8px; /* Slimmer padding */
+    border: 2px solid #642323;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px; /* Smaller border radius */
+    font-size: 12px; /* Smaller text */
+    transition: background-color 0.3s;
+    min-width: 100px; /* Reduced width */
+    text-align: center;
+    font-weight: bold; /* Bold text */
+    margin-bottom: 2%;
+}
+
+.cargo-entry button:hover {
+    background-color: #C0392B;
+}
+
+/* Add Location Button */
+.add-location-button {
+    padding: 5px 10px; /* Slimmer padding */
+    background-color: #2f80b6;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 3px; /* Smaller border radius */
+    font-size: 12px; /* Smaller text */
+    transition: background-color 0.3s;
+    margin-bottom: 10px;
+    font-weight: bold; /* Bold text */
+}
+
+.add-location-button:hover {
+    background-color: #1F6391;
+}
+
+/* Cargo Entry Container */
+.cargo-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between elements */
+    margin-bottom: 10px; /* Space below each cargo entry */
+}
+
+/* Remove Cargo Button Styling */
+.remove-cargo-button {
+    flex-shrink: 0; /* Prevent the button from shrinking */
+    padding: 5px 10px; /* Slimmer padding */
+    background-color: #E74C3C;
+    border: none;
+    color: white;
+    border-radius: 5px; /* Smaller border radius */
+    cursor: pointer;
+    transition: background-color 0.3s;
+    min-width: 80px; /* Reduced width */
+    font-size: 12px; /* Smaller text */
+    font-weight: bold; /* Bold text */
+}
+
+.remove-cargo-button:hover {
+    background-color: #C0392B;
+}
+
+/* Location Entry Styling */
+.location-entry {
+    border: 1px solid #353535;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background-color: #333;
+    position: relative; /* To position buttons absolutely */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Position Remove Destination and Start Point Buttons at Top Right */
+.location-entry .button-container {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: flex;
+    gap: 5px;
+}
+
+/* Specific Button Styles */
+
+/* Add Cargo Button */
+.location-entry .add-cargo-button {
+    align-self: flex-end; /* Position at bottom right */
+    padding: 9px 10px; /* Slimmer padding */
+    background-color: #2ECC71; /* Green */
+    border-radius: 12px; /* Smaller border radius */
+    font-size: 12px; /* Smaller text */
+    font-weight: bold; /* Bold text */
+}
+
+.location-entry .add-cargo-button:hover {
+    background-color: #27AE60;
+}
+
+/* Remove Destination Button */
+.location-entry .remove-destination-button {
+    background-color: #E74C3C; /* Red */
+    padding: 10px 10px; /* Slimmer padding */
+    border-radius: 8px; /* Smaller border radius */
+    font-size: 12px; /* Smaller text */
+    font-weight: bold; /* Bold text */
+}
+
+.location-entry .remove-destination-button:hover {
+    background-color: #C0392B;
+}
+
+/* Remove Start Point Button */
+.location-entry .remove-start-button {
+    background-color: #E74C3C; /* Red */
+    padding: 5px 10px; /* Slimmer padding */
+    border-radius: 3px; /* Smaller border radius */
+    font-size: 12px; /* Smaller text */
+    font-weight: bold; /* Bold text */
+}
+
+.location-entry .remove-start-button:hover {
+    background-color: #C0392B;
+}
+
+/* Adjust Button Container */
+.location-entry .button-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+    width: 100%;
+}
+
+/* Positioning Buttons within .location-entry */
+.location-entry .button-container button {
+    margin-top: 0;
+}
+
+/* Added Missions Box */
+.mission-list-container {
+    background-color: #222;
+    border: 2px solid #555;
+    border-radius: 5px;
+    padding: 15px;
+    max-height: 55vh;
+    overflow-y: auto;
+}
+
+.mission-list-container h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 20px; /* Smaller font size */
+    color: #2ECC71;
+}
+
+.mission-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mission-list li {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #333;
+    border-radius: 5px;
+    font-size: 12px; /* Smaller text */
+}
+
+.mission-list li strong {
+    color: #FFFFFF;
+}
+
+/* Summary Section */
+#summary {
+    padding: 15px;
+    background-color: #222;
+    border-radius: 5px;
+    font-size: 15px; /* Smaller text */
+}
+
+#summary h3 {
+    margin-top: 0;
+}
+
+#summary p, #summary ul {
+    margin: 5px 0;
+}
+
+#summary ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+#summary ul li {
+    font-size: 14px; /* Smaller text */
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #111;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 10px;
+    border: 2px solid #111;
+}
+
+/* Adjustments for responsiveness */
+@media screen and (max-width: 1200px) {
+    #bottomContainer {
+        flex-direction: column;
+        max-height: none;
+    }
+
+    #algorithmParameters {
+        border-left: none;
+        border-top: 2px solid #555;
+    }
+}
+
+/* Cargo Capacity Input Styling */
+.cargo-capacity {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #222;
+    border-radius: 5px;
+}
+
+.cargo-capacity label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.cargo-capacity input {
+    width: 100%;
+    padding: 5px;
+    border: 2px solid #555;
+    border-radius: 4px;
+    background-color: #333;
+    color: #fff;
+    font-size: 12px;
+}
+
+.cargo-capacity input:focus {
+    outline: none;
+    border-color: #2ECC71;
+    box-shadow: 0 0 5px #2ECC71;
+}
+
+/* Route Summary Styling */
+
+/* Route Stop Header (Unchanged) */
+.route-stop-header {
+    font-size: 25px; /* Increased font size for better visibility */
+    margin-bottom: 10px; /* Space below the header */
+    color: #ffffff; /* Green color for emphasis */
+    font-weight: bold; /* Make the header bold */
+}
+
+/* Pickups Header Styling */
+.route-pickups-header {
+    font-size: 16px; /* Slightly larger than default text */
+    text-decoration: underline; /* Underline the header */
+    margin-top: 15px; /* Space above the header */
+    margin-bottom: 5px; /* Space below the header */
+    color: #a2ceb3; /* Green color for Pickups */
+}
+
+/* Drop offs Header Styling */
+.route-dropoffs-header {
+    font-size: 16px; /* Slightly larger than default text */
+    text-decoration: underline; /* Underline the header */
+    margin-top: 15px; /* Space above the header */
+    margin-bottom: 5px; /* Space below the header */
+    color: #dfb8b8; /* Red color for Drop offs */
+}
+
+/* Cargo Type Summaries */
+.cargo-summary {
+    font-size: 14px; /* Slightly larger than individual cargo lines */
+    font-style: italic; /* Italicized text */
+    margin-bottom: 5px; /* Space below the summary */
+    color: #FFFFFF; /* White color */
+}
+
+/* Individual Cargo Lines */
+.cargo-detail {
+    font-size: 12px; /* Default font size */
+    margin-left: 0px; /* Increased indent for clarity */
+    color: #f1f1f1; /* Light gray for less emphasis */
+}
+
+/* Cargo Load Info Styling */
+.cargo-load-info {
+    font-size: 12px; /* Smaller font size to fit in one line */
+    margin-top: 10px; /* Space above the line */
+    margin-bottom: 20px; /* Increased space below the line */
+    color: #FFFFFF; /* White color */
+}
+
+/* Add spacing between each stop section */
+#routeDetails li {
+    margin-bottom: 30px; /* Increased spacing between stops */
+}
+
+/* Delete Mission Button Styling */
+.delete-mission-button {
+    background-color: #E74C3C; /* Red background */
+    color: #fff; /* White text */
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 10px; /* Spacing from mission details */
+}
+
+.delete-mission-button:hover {
+    background-color: #C0392B; /* Darker red on hover */
+}
+/* Floating Button Styling */
+.floating-button {
+    position: absolute; /* Position the button relative to the map container */
+    bottom: 20px;          /* Distance from the top */
+    right: 20px;        /* Distance from the right */
+    background-color: #e67e22; /* Default background color */
+    color: white;       /* Default text color */
+    padding: 10px 20px; /* Default padding */
+    border: none;       /* No border */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 16px;    /* Default font size */
+    cursor: pointer;    /* Pointer cursor on hover */
+    z-index: 1000;      /* Ensure the button is above other map elements */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); /* Optional: Add a subtle shadow */
+    transition: background-color 0.3s, transform 0.3s; /* Smooth transitions */
+}
+
+/* Hover Effects */
+.floating-button:hover {
+    background-color: #d35400; /* Darker shade on hover */
+    transform: scale(1.05);    /* Slightly enlarge on hover */
+}
+
+/* Active/Pressed State */
+.floating-button:active {
+    background-color: #c0392b; /* Even darker shade when pressed */
+    transform: scale(0.95);    /* Slightly shrink when pressed */
+}
+
+/* Customization Options */
+
+/* Change Button Color */
+.floating-button.custom-color {
+    background-color: #424242; /* Example: Blue background */
+    color: #fff;                /* White text */
+}
+
+/* Change Button Size */
+.floating-button.large {
+    padding: 15px 30px;
+    font-size: 18px;
+}
+
+.floating-button.small {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+/* Change Text Font */
+.floating-button.custom-font {
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+}
+
+/* Additional Styles */
+.floating-button.rounded {
+    border-radius: 50px; /* Fully rounded corners */
+}
+
+.floating-button.square {
+    border-radius: 0; /* Square corners */
+}
+.example-mission {
+    background-color: #4c7596; /* Gray background */
+    color: white;              /* White text */
+    padding: 10px 10px;        /* Padding around text */
+    border: none;              /* No border */
+    border-radius: 5px;        /* Rounded corners */
+    font-size: 12px;           /* Smaller font size */
+    font-weight: bold;         /* Bold text */
+    cursor: pointer;           /* Pointer cursor on hover */
+    margin-bottom: 10px;       /* Space below the button */
+}   
+.feedback-and-bugs {
+    background-color: #9172ca; /* Gray background */
+    color: white;              /* White text */
+    padding: 10px 10px;        /* Padding around text */
+    border: none;              /* No border */
+    border-radius: 5px;        /* Rounded corners */
+    font-size: 12px;           /* Smaller font size */
+    font-weight: bold;         /* Bold text */
+    cursor: pointer;           /* Pointer cursor on hover */
+    margin-left:280px;       /* Space to the left of the button */
+    margin-bottom: 10px;       /* Space below the button */
+   
+}
+
+.clear-all-button {
+    background-color: #e74c3c; /* Red background */
+    color: white;              /* White text */
+    padding: 8px 15px;        /* Padding around text */
+    border: none;              /* No border */
+    border-radius: 5px;        /* Rounded corners */
+    font-size: 12px;           /* Smaller font size */
+    font-weight: bold;         /* Bold text */
+    cursor: pointer;           /* Pointer cursor on hover */
+    margin-top: 10px;          /* Space above the button */
+    margin-bottom: 10px;       /* Space below the button */
+}
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h1 class ="title">SC Cargo Hauling Tool v2 by SigmaPrimer</h1>
+        <!-- DELETE AFTER TESTING -->
+        <!-- Add Example Missions Button -->
+        <button id="loadExampleMissionsButton" class="example-mission" onclick="loadExampleMissions()">Load Example Missions</button>
+        <!-- DELETE AFTER TESTING -->
+        <!-- Add Feedback/Bugs Button -->
+        <button 
+        id="feedbackBugsButton" 
+        class="feedback-and-bugs" 
+        onclick="window.open('https://forms.gle/Grim19VwLTMqmR3d7', '_blank')" 
+        aria-label="Feedback and Bug Report"
+    >
+        Feedback/Bugs
+        </button>
+        <!-- ============================
+             Added Reset Map Button
+             ============================ -->
+        <!-- Reset Map Button -->
+      
+        <!-- ============================ -->
+        
+        <!-- Starting Location Selection -->
+        <div class="starting-location">
+            <h2>Starting Location</h2>
+            <label for="startingLocation">Select Starting Location:</label>
+            <select id="startingLocation">
+                <option value="">-- Select Starting Location --</option>
+                <!-- Options will be populated dynamically -->
+            </select>
+        </div>
+
+        <!-- Maximum Cargo Capacity Input -->
+        <div class="cargo-capacity">
+            <label for="cargoCapacity">Maximum Cargo Capacity (SCU):</label>
+            <input type="number" id="cargoCapacity" min="1" placeholder="e.g., 100">
+        </div>
+
+        <!-- Mission Input Form -->
+        <h2>Add Cargo Hauling Missions</h2>
+        <div class="mission-form">
+            <label for="missionType">Mission Type:</label>
+            <select id="missionType">
+                <option value="">-- Select Mission Type --</option>
+                <option value="direct">Direct</option>
+                <option value="multipleDropOff">Multiple Drop Off</option>
+                <option value="multiplePickUp">Multiple Pick Up</option>
+            </select>
+
+            <div id="missionDetails">
+                <!-- Dynamic mission-specific inputs will appear here -->
+            </div>
+
+            <button id="addMissionButton">Add Mission</button>
+        </div>
+
+        <!-- List of Added Missions -->
+        <div class="mission-list-container">
+            <h2>Added Missions</h2>
+            
+            <!-- Clear All Missions Button -->
+            <button id="clearAllMissionsButton" class="clear-all-button">Clear All Missions</button>
+            
+            <ul class="mission-list" id="missionList">
+                <!-- List of added missions will appear here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- New Main Content Wrapper -->
+    <div id="mainContent">
+        <div id="map">
+            <!-- The map will be rendered here -->
+
+            <button id="resetMapButton" class="floating-button" onclick="resetMap()">Reset Map</button>
+        </div>
+
+        <!-- New Bottom Container -->
+        <div id="bottomContainer">
+            <!-- Route Length Graph Container -->
+            <div id="routeLengthGraphContainer">
+                <h2>Route Length Over Generations</h2>
+                <div id="routeLengthGraph"></div>
+            </div>
+
+            <!-- Moved Algorithm Parameters here -->
+            <div id="algorithmParameters">
+                <h2>GA Parameters</h2>
+                <label for="populationSize">Population Size:</label>
+                <input type="number" id="populationSize" value="1000" min="10" max="1000">
+                <p>Determines the number of candidate solutions in each generation. Higher values may find better solutions but take longer.</p>
+
+                <label for="generations">Generations:</label>
+                <input type="number" id="generations" value="400" min="10" max="1000">
+                <p>Number of iterations the algorithm runs. More generations allow better optimization but increase computation time.</p>
+
+                <label for="mutationRate">Mutation Rate:</label>
+                <input type="number" id="mutationRate" value="0.5" min="0" max="1" step="0.01">
+                <p>The probability of random changes in the offspring. Higher rates increase diversity but may disrupt good solutions.</p>
+
+                <!-- Calculate Route Button -->
+                <button id="calculateRouteButton">Calculate Optimal Route</button>
+
+                <!-- Loading bar container -->
+                <div id="loadingBarContainer">
+                    <div id="loadingBar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="rightSidebar">
+        <!-- Route Summary -->
+        <div id="summary">
+            <h1>Route Summary</h1>
+            <p id="totalDistance">Total Distance: 0 Gm</p>
+            <p id="totalReward">Total Profit: 0 aUEC</p>
+            <h4>Route Details:</h4>
+            <ul id="routeDetails">
+                <!-- Detailed route information will appear here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Include your JavaScript files here -->
+    <script type="module">
+    // Define green shades
+    const darkGreen = 'rgba(32, 54, 44, 0.8)';    // Dark green for temporary routes
+    const brightGreen = 'rgba(17, 163, 98, 0.8)';  // Bright green for final routes
+    const arrowColor = 'rgba(10, 124, 73, 0.8)';   // Arrow color matching bright green
+    // Function to convert polar coordinates to Cartesian
+    function polarToCartesian(angleDeg, distance) {
+        const angleRad = (angleDeg * Math.PI) / 180;
+        const x = distance * Math.cos(angleRad);
+        const y = distance * Math.sin(angleRad);
+        return { x, y };
+    }
+    
+    // Data for systems
+    const systems = [
+        {
+            name: "Hurston",
+            lagrangeColor: "#FF69B4", // Hot pink
+            planet: {
+                name: "Hurston",
+                angle: 0.0,
+                distance: 12.85,
+                type: "Planet",
+            },
+            orbitalStation: {
+                name: "Everus Harbour",
+                angle: 0.0,
+                distance: 12.850459,
+                type: "Orbital Station",
+            },
+            lagrangePoints: [
+                { name: "HUR-L1", angle: 0.0, distance: 11.56, type: "Lagrange Point" },
+                { name: "HUR-L2", angle: 0.0, distance: 14.13, type: "Lagrange Point" },
+                { name: "HUR-L3", angle: -179.99, distance: 12.85, type: "Lagrange Point" },
+                { name: "HUR-L4", angle: 60.0, distance: 12.85, type: "Lagrange Point" },
+                { name: "HUR-L5", angle: -60.0, distance: 12.85, type: "Lagrange Point" },
+            ],
+            moons: [
+                { name: "Arial", angle: -0.13, distance: 12.89, type: "Moon" },
+                { name: "Aberdeen", angle: 0.18, distance: 12.9, type: "Moon" },
+                { name: "Magda", angle: -0.33, distance: 12.79, type: "Moon" },
+                { name: "Ita", angle: 0.51, distance: 12.83, type: "Moon" },
+            ],
+        },
+        {
+            name: "Crusader",
+            lagrangeColor: "#00CED1", // Dark turquoise
+            planet: {
+                name: "Crusader",
+                angle: -171.99,
+                distance: 19.14,
+                type: "Planet",
+            },
+            orbitalStation: {
+                name: "Seraphim Station",
+                angle: -171.98,
+                distance: 19.15,
+                type: "Orbital Station",
+            },
+            lagrangePoints: [
+                { name: "CRU-L1", angle: -171.99, distance: 17.23, type: "Lagrange Point" },
+                { name: "CRU-L2", angle: -171.99, distance: 21.06, type: "Lagrange Point" },
+                { name: "CRU-L3", angle: 8.0, distance: 19.14, type: "Lagrange Point" },
+                { name: "CRU-L4", angle: -112.0, distance: 19.14, type: "Lagrange Point" },
+                { name: "CRU-L5", angle: 127.99, distance: 19.14, type: "Lagrange Point" },
+            ],
+            moons: [
+                { name: "Cellin", angle: -171.88, distance: 19.17, type: "Moon" },
+                { name: "Daymar", angle: -172.14, distance: 19.1, type: "Moon" },
+                { name: "Yela", angle: -172.17, distance: 19.2, type: "Moon" },
+            ],
+        },
+        {
+            name: "ArcCorp",
+            lagrangeColor: "#FFD700", // Gold
+            planet: {
+                name: "ArcCorp",
+                angle: -50.0,
+                distance: 28.91,
+                type: "Planet",
+            },
+            orbitalStation: {
+                name: "Baijini Point",
+                angle: -50.0,
+                distance: 28.910459,
+                type: "Orbital Station",
+            },
+            lagrangePoints: [
+                { name: "ARC-L1", angle: -49.99, distance: 26.09, type: "Lagrange Point" },
+                { name: "ARC-L2", angle: -49.99, distance: 31.8, type: "Lagrange Point" },
+                { name: "ARC-L3", angle: 149.99, distance: 28.91, type: "Lagrange Point" },
+                { name: "ARC-L4", angle: -9.99, distance: 28.91, type: "Lagrange Point" },
+                { name: "ARC-L5", angle: -109.99, distance: 28.91, type: "Lagrange Point" },
+            ],
+            moons: [
+                { name: "Lyria", angle: -49.78, distance: 28.96, type: "Moon" },
+                { name: "Wala", angle: -50.12, distance: 28.66, type: "Moon" },
+            ],
+        },
+        {
+            name: "microTech",
+            lagrangeColor: "#8A2BE2", // Blue violet
+            planet: {
+                name: "microTech",
+                angle: 58.86,
+                distance: 43.44,
+                type: "Planet",
+            },
+            orbitalStation: {
+                name: "Port Tressler",
+                angle: 58.86,
+                distance: 43.440459,
+                type: "Orbital Station",
+            },
+            lagrangePoints: [
+                { name: "MIC-L1", angle: 58.86, distance: 39.9, type: "Lagrange Point" },
+                { name: "MIC-L2", angle: 58.86, distance: 47.78, type: "Lagrange Point" },
+                { name: "MIC-L3", angle: -121.12, distance: 43.44, type: "Lagrange Point" },
+                { name: "MIC-L4", angle: 118.86, distance: 43.44, type: "Lagrange Point" },
+                { name: "MIC-L5", angle: -1.12, distance: 43.44, type: "Lagrange Point" },
+            ],
+            moons: [
+                { name: "Calliope", angle: 58.92, distance: 43.39, type: "Moon" },
+                { name: "Clio", angle: 58.78, distance: 43.36, type: "Moon" },
+                { name: "Euterpe", angle: 58.76, distance: 43.37, type: "Moon" },
+            ],
+        },
+    ];
+    
+    // Jump Points
+    const jumpPoints = [
+        { name: "Stanton-Pyro", angle: -83.25, distance: 28.3, type: "Jump Point" },
+        { name: "Stanton-Terra", angle: -5.88, distance: 51.57, type: "Jump Point" },
+        { name: "Stanton-Magnus", angle: 159.35, distance: 69.55, type: "Jump Point" },
+    ];
+    
+    // Colors for different POI types
+    const colors = {
+        Planet: "#FF5733", // Vibrant red
+        Moon: "#3498DB", // Bright blue
+        "Orbital Station": "#2ECC71", // Green
+        "Lagrange Point": "#F1C40F", // Yellow (will be overridden per system)
+        "Jump Point": "#9B59B6", // Purple
+        Star: "#FFD700", // Gold for central star
+    };
+    
+    // Symbol mapping
+const symbols = {
+    Planet: "circle",
+    Moon: "diamond",
+    "Orbital Station": "square",
+    "Lagrange Point": "triangle-up",
+    "Jump Point": "star",
+    Star: "circle-open",
+};
+
+// Initialize data arrays
+let orbitTraces = [];
+let poiTraces = [];
+let annotations = [];
+let events = []; // Array to store all pickup and drop-off events
+let missions = []; // Array to store missions
+let allPOIs = []; // Initialize allPOIs here
+
+let startingLocation; // Variable to store the starting location
+// Initialize the Route Length Graph
+let routeLengthData = {
+    x: [], // Generations
+    y: [], // Route Lengths
+    type: 'scatter',
+    mode: 'lines+markers',
+    marker: { color: '#2ECC71' },
+    line: { color: '#2ECC71' },
+    name: 'Route Length'
+};
+
+let routeLengthLayout = {
+    title: 'Route Length Over Generations',
+    xaxis: { 
+        title: 'Generation',
+        showgrid: false, // Removes inner grid lines on x-axis
+    },
+    yaxis: { 
+        title: 'Total Distance (Gm)',
+        showgrid: false, // Removes inner grid lines on y-axis
+        range: [0, null], // Sets the minimum value of y-axis to 0
+    },
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#fff' },
+    margin: { l: 40, r: 20, t: 40, b: 40 },
+    showlegend: false,
+};
+
+Plotly.newPlot('routeLengthGraph', [routeLengthData], routeLengthLayout, {responsive: true});
+
+// ******** DELETE AFTER TESTING ******** //
+// Example Missions (easily removable)
+const exampleMissions = [
+    {
+        type: 'multiplePickUp', // Mission 1: Multi pickup
+        rewardAmount: 10000,
+        cargoEntries: [
+            { type: 'Waste', quantity: 3, from: 'MIC-L5', to: 'Port Tressler' },
+            { type: 'Scrap', quantity: 3, from: 'MIC-L5', to: 'Port Tressler' },
+            { type: 'Waste', quantity: 2, from: 'MIC-L1', to: 'Port Tressler' },
+            { type: 'Scrap', quantity: 3, from: 'MIC-L1', to: 'Port Tressler' }
+        ]
+    },
+    {
+        type: 'multipleDropOff', // Mission 2: Multi dropoff
+        rewardAmount: 10100,
+        cargoEntries: [
+            { type: 'Ice', quantity: 6, from: 'Port Tressler', to: 'MIC-L4' },
+            { type: 'Food', quantity: 4, from: 'Port Tressler', to: 'MIC-L4' },
+            { type: 'Ice', quantity: 3, from: 'Port Tressler', to: 'MIC-L2' },
+            { type: 'Food', quantity: 3, from: 'Port Tressler', to: 'MIC-L2' }
+        ]
+    },
+    {
+        type: 'direct', // Mission 3: Direct
+        rewardAmount: 10200,
+        cargoEntries: [
+            { type: 'Ice', quantity: 15, from: 'Port Tressler', to: 'Seraphim Station' }
+        ]
+    },
+    {
+        type: 'direct', // Mission 4: Direct
+        rewardAmount: 10300,
+        cargoEntries: [
+            { type: 'Waste', quantity: 7, from: 'MIC-L2', to: 'Port Tressler' },
+            { type: 'Scrap', quantity: 6, from: 'MIC-L2', to: 'Port Tressler' }
+        ]
+    },
+    {
+        type: 'direct', // Mission 5: Direct
+        rewardAmount: 10400,
+        cargoEntries: [
+            { type: 'Stims', quantity: 13, from: 'Port Tressler', to: 'MIC-L1' }
+        ]
+    },
+    {
+        type: 'multiplePickUp', // Mission 6: Multi pickup
+        rewardAmount: 10500,
+        cargoEntries: [
+            { type: 'Agri', quantity: 7, from: 'Seraphim Station', to: 'Everus Harbour' },
+            { type: 'Agri', quantity: 7, from: 'CRU-L5', to: 'Everus Harbour' }
+        ]
+    }
+];
+
+// Function to populate example missions
+function loadExampleMissions() {
+    exampleMissions.forEach((mission) => {
+        addMissionToList(mission);
+    });
+    alert('Example missions have been loaded!');
+}
+
+// Expose the function to the global scope
+window.loadExampleMissions = loadExampleMissions;
+// ******** DELETE AFTER TESTING ******** //
+
+// Add central star
+poiTraces.push({
+    x: [0],
+    y: [0],
+    mode: "markers",
+    type: "scatter",
+    name: "Central Star",
+    marker: {
+        symbol: symbols["Star"],
+        size: 30, // Increased size
+        color: colors["Star"],
+        line: {
+            color: "#4A4A4A", // Changed to match orbital lines
+            width: 2,
+        },
+    },
+    text: "Central Star",
+    hoverinfo: "text",
+});
+
+// Iterate through each system to create orbits and POIs
+systems.forEach((system) => {
+    // Planet orbit (around the central star)
+    let planetOrbit = {
+        x: [],
+        y: [],
+        mode: "lines",
+        type: "scatter",
+        name: `${system.name} Orbit`,
+        line: { dash: "solid", color: "#4A4A4A" }, // Changed to grey and solid
+        hoverinfo: "none",
+        showlegend: false,
+    };
+    const numPoints = 360;
+    for (let i = 0; i <= numPoints; i++) {
+        let angle = i;
+        let coord = polarToCartesian(angle, system.planet.distance);
+        planetOrbit.x.push(coord.x);
+        planetOrbit.y.push(coord.y);
+    }
+    orbitTraces.push(planetOrbit);
+
+    // Plot planet
+    let planetCoord = polarToCartesian(system.planet.angle, system.planet.distance);
+    poiTraces.push({
+        x: [planetCoord.x],
+        y: [planetCoord.y],
+        mode: "markers",
+        type: "scatter",
+        name: system.planet.name,
+        marker: {
+            symbol: symbols[system.planet.type],
+            size: 14,
+            color: colors[system.planet.type], // Updated colors for visibility
+            line: {
+                color: "#4A4A4A", // Changed to match orbital lines
+                width: 2,
+            },
+        },
+        text: system.planet.name,
+        hoverinfo: "text",
+    });
+
+    // Add to allPOIs
+    allPOIs.push({
+        name: system.planet.name,
+        x: planetCoord.x,
+        y: planetCoord.y,
+    });
+
+    // Plot orbital station
+    let stationCoord = polarToCartesian(
+        system.orbitalStation.angle,
+        system.orbitalStation.distance
+    );
+    poiTraces.push({
+        x: [stationCoord.x],
+        y: [stationCoord.y],
+        mode: "markers",
+        type: "scatter",
+        name: system.orbitalStation.name,
+        marker: {
+            symbol: symbols[system.orbitalStation.type],
+            size: 10,
+            color: colors[system.orbitalStation.type], // Updated for visibility
+            line: {
+                color: "#4A4A4A", // Changed to match orbital lines
+                width: 0.5,
+            },
+        },
+        text: system.orbitalStation.name,
+        hoverinfo: "text",
+    });
+
+    // Add to allPOIs
+    allPOIs.push({
+        name: system.orbitalStation.name,
+        x: stationCoord.x,
+        y: stationCoord.y,
+    });
+
+    // Plot Lagrange points with unique colors and oval shape
+    system.lagrangePoints.forEach((lp) => {
+        let lpCoord = polarToCartesian(lp.angle, lp.distance);
+        poiTraces.push({
+            x: [lpCoord.x],
+            y: [lpCoord.y],
+            mode: "markers",
+            type: "scatter",
+            name: lp.name,
+            marker: {
+                symbol: 'circle', // Changed to 'circle' for solid oval-like shape
+                size: 5, // Half the current size
+                color: system.lagrangeColor, // Unique color per system
+                line: {
+                    color: "#FFFFFF",
+                    width: 1,
+                },
+            },
+            text: lp.name,
+            hoverinfo: "text",
+        });
+
+        // Add to allPOIs
+        allPOIs.push({
+            name: lp.name,
+            x: lpCoord.x,
+            y: lpCoord.y,
+        });
+
+        // Add annotation for Lagrange point
+        annotations.push({
+            x: lpCoord.x,
+            y: lpCoord.y,
+            xref: "x",
+            yref: "y",
+            text: lp.name,
+            showarrow: false,
+            font: {
+                color: "#FFFFFF",
+                size: 10,
+            },
+            visible: false,
+        });
+    });
+
+    // Plot moon orbits (centered on planet)
+    system.moons.forEach((moon) => {
+        // Current moon position
+        let moonCoord = polarToCartesian(moon.angle, moon.distance);
+        // Planet position
+        let planetCoordCartesian = planetCoord; // Already calculated
+        // Relative position
+        let relativeX = moonCoord.x - planetCoordCartesian.x;
+        let relativeY = moonCoord.y - planetCoordCartesian.y;
+        // Orbit radius
+        let orbitRadius = Math.sqrt(
+            relativeX ** 2 + relativeY ** 2
+        );
+
+        // Moon orbit trace
+        let moonOrbit = {
+            x: [],
+            y: [],
+            mode: "lines",
+            type: "scatter",
+            name: `${moon.name} Orbit`,
+            line: { dash: "solid", color: "#4A4A4A" }, // Changed to grey and solid
+            hoverinfo: "none",
+            showlegend: false,
+        };
+        for (let i = 0; i <= numPoints; i++) {
+            let angle = i;
+            let rad = (angle * Math.PI) / 180;
+            let x =
+                planetCoordCartesian.x + orbitRadius * Math.cos(rad);
+            let y =
+                planetCoordCartesian.y + orbitRadius * Math.sin(rad);
+            moonOrbit.x.push(x);
+            moonOrbit.y.push(y);
+        }
+        orbitTraces.push(moonOrbit);
+
+        // Plot moon
+        poiTraces.push({
+            x: [moonCoord.x],
+            y: [moonCoord.y],
+            mode: "markers",
+            type: "scatter",
+            name: moon.name,
+            marker: {
+                symbol: symbols[moon.type],
+                size: 8,
+                color: colors[moon.type], // Updated colors for visibility
+                line: {
+                    color: "#4A4A4A", // Changed to match orbital lines
+                    width: 0.5,
+                },
+            },
+            text: moon.name,
+            hoverinfo: "text",
+        });
+
+        // Add to allPOIs
+        allPOIs.push({
+            name: moon.name,
+            x: moonCoord.x,
+            y: moonCoord.y,
+        });
+
+        // Add annotation for moon
+        annotations.push({
+            x: moonCoord.x,
+            y: moonCoord.y,
+            xref: "x",
+            yref: "y",
+            text: moon.name,
+            showarrow: false,
+            font: {
+                color: "#FFFFFF",
+                size: 8,
+            },
+            visible: false,
+        });
+    });
+});
+
+// Plot Jump Points
+jumpPoints.forEach((jp) => {
+    let jpCoord = polarToCartesian(jp.angle, jp.distance);
+    poiTraces.push({
+        x: [jpCoord.x],
+        y: [jpCoord.y],
+        mode: "markers",
+        type: "scatter",
+        name: jp.name,
+        marker: {
+            symbol: symbols[jp.type],
+            size: 12,
+            color: colors[jp.type], // Updated for visibility
+            line: {
+                color: "#4A4A4A", // Changed to match orbital lines
+                width: 0.5,
+            },
+        },
+        text: jp.name,
+        hoverinfo: "text",
+    });
+
+    // Add to allPOIs
+    allPOIs.push({
+        name: jp.name,
+        x: jpCoord.x,
+        y: jpCoord.y,
+    });
+
+    // Add annotation for jump point
+    annotations.push({
+        x: jpCoord.x,
+        y: jpCoord.y,
+        xref: "x",
+        yref: "y",
+        text: jp.name,
+        showarrow: false,
+        font: {
+            color: "#FFFFFF",
+            size: 10,
+        },
+        visible: false,
+    });
+});
+
+ // Populate Starting Location Dropdown
+ const startingLocationSelect = document.getElementById("startingLocation");
+    allPOIs.forEach((poi) => {
+        const option = document.createElement("option");
+        option.value = poi.name;
+        option.text = poi.name;
+        startingLocationSelect.appendChild(option);
+    });
+    
+    // Combine all data for the plot
+    let plotData = [...orbitTraces, ...poiTraces];
+    
+    // Define layout with updated background color and legend removed
+    let plotLayout = {
+        title: "",
+        paper_bgcolor: "#0D0D0D", // Almost black background
+        plot_bgcolor: "#0D0D0D",  // Almost black background
+        xaxis: {
+            showgrid: false,
+            zeroline: false,
+            showticklabels: false,
+            range: [-80, 80], // Initial X Range
+            scaleanchor: "y",
+            scaleratio: 1,
+        },
+        yaxis: {
+            showgrid: false,
+            zeroline: false,
+            showticklabels: false,
+            range: [-80, 80], // Initial Y Range
+        },
+        showlegend: false, // Legend removed
+        hovermode: "closest",
+        margin: { l: 0, r: 0, t: 50, b: 0 },
+        annotations: annotations, // Initial annotations (hidden)
+        dragmode: 'pan', // Enable panning on left-click and drag
+    };
+    
+    // Store initial ranges for resetting the map
+    const initialXRange = [-80, 80];
+    const initialYRange = [-80, 80];
+    
+    // Render the plot
+    Plotly.newPlot("map", plotData, plotLayout, { responsive: true, scrollZoom: true });
+    
+    // Function to generate unique IDs
+    function uniqueID() {
+        return "_" + Math.random().toString(36).substr(2, 9);
+    }
+    
+    // Function to dynamically display mission-specific input fields
+    document
+        .getElementById("missionType")
+        .addEventListener("change", function () {
+            const missionDetails = document.getElementById("missionDetails");
+            missionDetails.innerHTML = ""; // Clear existing inputs
+
+            const selectedType = this.value;
+
+            if (selectedType === "direct") {
+                // Direct Mission: Single Pickup and Drop-off
+                addDirectMissionFields(missionDetails);
+            } else if (selectedType === "multipleDropOff") {
+                // Multiple Drop Off: Single Pickup with Multiple Destinations
+                addMultipleDropOffFields(missionDetails);
+            } else if (selectedType === "multiplePickUp") {
+                // Multiple Pick Up: Multiple Pickups with Single Destination
+                addMultiplePickUpFields(missionDetails);
+            }
+        });
+        
+    // ========================
+    // Added Reset Map Function
+    // ========================
+    /**
+     * Resets the map view to its initial position and zoom level.
+     */
+     function resetMap() {
+        Plotly.relayout('map', {
+            'xaxis.range': initialXRange,
+            'yaxis.range': initialYRange,
+        });
+        console.log("Map has been reset to initial view.");
+    }
+    
+    // Expose the function to the global scope
+    window.resetMap = resetMap;
+    // ========================
+
+// Function to add fields for Direct Mission
+function addDirectMissionFields(container) {
+    // Start Point
+    const startLabel = document.createElement("label");
+    startLabel.setAttribute("for", "startPoint");
+    startLabel.innerText = "Start Point:";
+    const startSelect = document.createElement("select");
+    startSelect.id = "startPoint";
+    startSelect.innerHTML =
+        '<option value="">-- Select Start Point --</option>';
+    allPOIs.forEach((poi) => {
+        const option = document.createElement("option");
+        option.value = poi.name;
+        option.text = poi.name;
+        startSelect.appendChild(option);
+    });
+
+    // Destination Point
+    const destLabel = document.createElement("label");
+    destLabel.setAttribute("for", "destPoint");
+    destLabel.innerText = "Destination Point:";
+    const destSelect = document.createElement("select");
+    destSelect.id = "destPoint";
+    destSelect.innerHTML =
+        '<option value="">-- Select Destination Point --</option>';
+    allPOIs.forEach((poi) => {
+        const option = document.createElement("option");
+        option.value = poi.name;
+        option.text = poi.name;
+        destSelect.appendChild(option);
+    });
+
+    // Reward Amount
+    const rewardLabel = document.createElement("label");
+    rewardLabel.setAttribute("for", "rewardAmount");
+    rewardLabel.innerText = "Reward Amount (Credits):";
+    const rewardInput = document.createElement("input");
+    rewardInput.type = "number";
+    rewardInput.id = "rewardAmount";
+    rewardInput.min = "0";
+    rewardInput.placeholder = "e.g., 20000";
+
+    // Cargo Entries Container
+    const cargoContainer = document.createElement("div");
+    cargoContainer.id = "cargoContainer";
+    cargoContainer.className = "cargoContainer";
+
+    // Add Cargo Button
+    const addCargoButton = document.createElement("button");
+    addCargoButton.type = "button";
+    addCargoButton.innerText = "Add Cargo";
+    addCargoButton.className = "add-location-button";
+    addCargoButton.addEventListener("click", function () {
+        addCargoEntry(cargoContainer);
+    });
+
+    // Append elements to container
+    container.appendChild(startLabel);
+    container.appendChild(startSelect);
+    container.appendChild(destLabel);
+    container.appendChild(destSelect);
+    container.appendChild(rewardLabel);
+    container.appendChild(rewardInput);
+    container.appendChild(addCargoButton);
+    container.appendChild(cargoContainer);
+
+    // Add initial cargo entry
+    addCargoEntry(cargoContainer);
+}
+
+// Function to add a new cargo entry
+function addCargoEntry(container) {
+    const cargoEntryDiv = document.createElement("div");
+    cargoEntryDiv.className = "cargo-entry";
+
+    // Cargo Type Input
+    const cargoTypeInput = document.createElement("input");
+    cargoTypeInput.type = "text";
+    cargoTypeInput.className = "cargo-type";
+    cargoTypeInput.placeholder = "Cargo Type";
+
+    // Quantity Input
+    const cargoQuantityInput = document.createElement("input");
+    cargoQuantityInput.type = "number";
+    cargoQuantityInput.className = "cargo-quantity";
+    cargoQuantityInput.placeholder = "Quantity";
+    cargoQuantityInput.min = "1";
+
+    // Remove Cargo Button
+    const removeCargoButton = document.createElement("button");
+    removeCargoButton.type = "button";
+    removeCargoButton.className = "remove-cargo-button";
+    removeCargoButton.innerText = "Remove Cargo";
+
+    // Event Listener for Remove Button
+    removeCargoButton.addEventListener("click", function () {
+        container.removeChild(cargoEntryDiv);
+    });
+
+    // Append elements to cargo entry div
+    cargoEntryDiv.appendChild(cargoTypeInput);
+    cargoEntryDiv.appendChild(cargoQuantityInput);
+    cargoEntryDiv.appendChild(removeCargoButton);
+
+    // Append cargo entry div to the container
+    container.appendChild(cargoEntryDiv);
+}
+
+// Function to add fields for Multiple Drop Off Mission
+function addMultipleDropOffFields(container) {
+    // Reward Amount
+    const rewardLabel = document.createElement("label");
+    rewardLabel.setAttribute("for", "rewardAmount");
+    rewardLabel.innerText = "Reward Amount (Credits):";
+    const rewardInput = document.createElement("input");
+    rewardInput.type = "number";
+    rewardInput.id = "rewardAmount";
+    rewardInput.min = "0";
+    rewardInput.placeholder = "e.g., 20000";
+
+    // Start Point
+    const startLabel = document.createElement("label");
+    startLabel.setAttribute("for", "startPoint");
+    startLabel.innerText = "Start Point:";
+    const startSelect = document.createElement("select");
+    startSelect.id = "startPoint";
+    startSelect.innerHTML =
+        '<option value="">-- Select Start Point --</option>';
+    allPOIs.forEach((poi) => {
+        const option = document.createElement("option");
+        option.value = poi.name;
+        option.text = poi.name;
+        startSelect.appendChild(option);
+    });
+
+    // Destination Points Container
+    const destsContainer = document.createElement("div");
+    destsContainer.id = "destsContainer";
+
+    // Add Destination Button
+    const addDestButton = document.createElement("button");
+    addDestButton.type = "button";
+    addDestButton.className = "add-location-button";
+    addDestButton.innerText = "Add Destination";
+    addDestButton.addEventListener("click", function () {
+        addDestinationEntry(destsContainer);
+    });
+
+    // Append elements to container
+    container.appendChild(rewardLabel);
+    container.appendChild(rewardInput);
+    container.appendChild(startLabel);
+    container.appendChild(startSelect);
+    container.appendChild(addDestButton);
+    container.appendChild(destsContainer);
+
+    // Add initial destination entry
+    addDestButton.click();
+}
+
+// Function to add a Destination Entry (for Multiple Drop Off)
+function addDestinationEntry(container) {
+    const destEntryDiv = document.createElement("div");
+    destEntryDiv.className = "location-entry";
+
+    const destHeader = document.createElement("h4");
+    destHeader.innerText = "Destination";
+
+    // Destination Point Label and Select
+    const destPointLabel = document.createElement("label");
+    destPointLabel.innerText = "Destination Point:";
+    const destPointSelect = document.createElement("select");
+    destPointSelect.className = "destPointSelect";
+    destPointSelect.innerHTML = '<option value="">-- Select Destination Point --</option>';
+    allPOIs.forEach((poi) => {
+        const option = document.createElement("option");
+        option.value = poi.name;
+        option.text = poi.name;
+        destPointSelect.appendChild(option);
+    });
+
+    // Cargo Entries Container
+    const cargoContainer = document.createElement("div");
+    cargoContainer.className = "cargoContainer";
+
+    // Add initial cargo entry
+    addCargoEntry(cargoContainer);
+
+    // Append elements to destination entry div
+    destEntryDiv.appendChild(destHeader);
+    destEntryDiv.appendChild(destPointLabel);
+    destEntryDiv.appendChild(destPointSelect);
+    destEntryDiv.appendChild(cargoContainer);
+
+    // Button Container
+    const buttonContainer = document.createElement("div");
+    buttonContainer.className = "button-container";
+
+    // Add Cargo Button
+    const addCargoButton = document.createElement("button");
+    addCargoButton.type = "button";
+    addCargoButton.innerText = "Add Cargo";
+    addCargoButton.className = "add-cargo-button";
+    addCargoButton.addEventListener("click", function () {
+        addCargoEntry(cargoContainer);
+    });
+
+    // Remove Destination Button
+    const removeDestButton = document.createElement("button");
+    removeDestButton.type = "button";
+    removeDestButton.innerText = "Remove Destination";
+    removeDestButton.className = "remove-destination-button";
+    removeDestButton.addEventListener("click", function () {
+        container.removeChild(destEntryDiv);
+    });
+
+    // Append buttons to button container
+    buttonContainer.appendChild(addCargoButton);
+    buttonContainer.appendChild(removeDestButton);
+
+    // Append button container to destination entry
+    destEntryDiv.appendChild(buttonContainer);
+
+    // Finally, append the entire destination entry to the parent container
+    container.appendChild(destEntryDiv);
+}
+
+// Function to add fields for Multiple Pick Up Mission
+function addMultiplePickUpFields(container) {
+    // Reward Amount
+    const rewardLabel = document.createElement("label");
+    rewardLabel.setAttribute("for", "rewardAmount");
+    rewardLabel.innerText = "Reward Amount (Credits):";
+    const rewardInput = document.createElement("input");
+    rewardInput.type = "number";
+    rewardInput.id = "rewardAmount";
+    rewardInput.min = "0";
+    rewardInput.placeholder = "e.g., 20000";
+
+    // Destination Point
+    const destLabel = document.createElement("label");
+    destLabel.setAttribute("for", "destPoint");
+    destLabel.innerText = "Destination Point:";
+    const destSelect = document.createElement("select");
+    destSelect.id = "destPoint";
+    destSelect.innerHTML =
+        '<option value="">-- Select Destination Point --</option>';
+    allPOIs.forEach((poi) => {
+        const option = document.createElement("option");
+        option.value = poi.name;
+        option.text = poi.name;
+        destSelect.appendChild(option);
+    });
+
+    // Start Points Container
+    const startsContainer = document.createElement("div");
+    startsContainer.id = "startsContainer";
+
+    // Add Start Point Button
+    const addStartButton = document.createElement("button");
+    addStartButton.type = "button";
+    addStartButton.className = "add-location-button";
+    addStartButton.innerText = "Add Start Point";
+    addStartButton.addEventListener("click", function () {
+        addStartEntry(startsContainer);
+    });
+
+    // Append elements to container
+    container.appendChild(rewardLabel);
+    container.appendChild(rewardInput);
+    container.appendChild(destLabel);
+    container.appendChild(destSelect);
+    container.appendChild(addStartButton);
+    container.appendChild(startsContainer);
+
+    // Add initial start entry
+    addStartButton.click();
+}
+
+// Function to add a Start Point Entry (for Multiple Pick Up)
+function addStartEntry(container) {
+    const startEntryDiv = document.createElement("div");
+    startEntryDiv.className = "location-entry";
+
+    const startHeader = document.createElement("h4");
+    startHeader.innerText = "Start Point";
+
+    // Start Point Label and Select
+    const startPointLabel = document.createElement("label");
+    startPointLabel.innerText = "Start Point:";
+    const startPointSelect = document.createElement("select");
+    startPointSelect.className = "startPointSelect";
+    startPointSelect.innerHTML = '<option value="">-- Select Start Point --</option>';
+    allPOIs.forEach((poi) => {
+        const option = document.createElement("option");
+        option.value = poi.name;
+        option.text = poi.name;
+        startPointSelect.appendChild(option);
+    });
+
+    // Cargo Entries Container
+    const cargoContainer = document.createElement("div");
+    cargoContainer.className = "cargoContainer";
+
+    // Add initial cargo entry
+    addCargoEntry(cargoContainer);
+
+    // Append elements to start entry div
+    startEntryDiv.appendChild(startHeader);
+    startEntryDiv.appendChild(startPointLabel);
+    startEntryDiv.appendChild(startPointSelect);
+    startEntryDiv.appendChild(cargoContainer);
+
+    // Button Container
+    const buttonContainer = document.createElement("div");
+    buttonContainer.className = "button-container";
+
+    // Add Cargo Button
+    const addCargoButton = document.createElement("button");
+    addCargoButton.type = "button";
+    addCargoButton.innerText = "Add Cargo";
+    addCargoButton.className = "add-cargo-button";
+    addCargoButton.addEventListener("click", function () {
+        addCargoEntry(cargoContainer);
+    });
+
+    // Remove Start Point Button
+    const removeStartButton = document.createElement("button");
+    removeStartButton.type = "button";
+    removeStartButton.innerText = "Remove Start Point";
+    removeStartButton.className = "remove-start-button";
+    removeStartButton.addEventListener("click", function () {
+        container.removeChild(startEntryDiv);
+    });
+
+    // Append buttons to button container
+    buttonContainer.appendChild(addCargoButton);
+    buttonContainer.appendChild(removeStartButton);
+
+    // Append button container to start entry
+    startEntryDiv.appendChild(buttonContainer);
+
+    // Finally, append the entire start entry to the parent container
+    container.appendChild(startEntryDiv);
+}
+
+// Handle adding missions
+document.getElementById("addMissionButton").addEventListener("click", () => {
+    const missionType = document.getElementById("missionType").value;
+    if (!missionType) {
+        alert("Please select a mission type.");
+        return;
+    }
+
+    let rewardAmount;
+    let startingPoint, destinationPoint;
+    let cargoEntries = [];
+
+    if (missionType === "direct") {
+        // Direct Mission: Single Pickup and Drop-off
+        rewardAmount = parseFloat(document.getElementById("rewardAmount").value);
+        startingPoint = document.getElementById("startPoint").value;
+        destinationPoint = document.getElementById("destPoint").value;
+
+        // Validate inputs
+        if (isNaN(rewardAmount) || !startingPoint || !destinationPoint) {
+            alert("Please fill in all mission details.");
+            return;
+        }
+
+        // Extract cargo entries
+        const cargoTypeElements = document.querySelectorAll("#missionDetails .cargoContainer .cargo-type");
+        const cargoAmountElements = document.querySelectorAll("#missionDetails .cargoContainer .cargo-quantity");
+
+        // Ensure that the number of cargo types matches the number of cargo amounts
+        if (cargoTypeElements.length !== cargoAmountElements.length) {
+            alert("Mismatch in cargo entries. Please ensure all cargo types have corresponding quantities.");
+            return;
+        }
+
+        // Iterate over each cargo entry and validate
+        for (let i = 0; i < cargoTypeElements.length; i++) {
+            const cargoType = cargoTypeElements[i].value.trim();
+            const cargoAmount = parseFloat(cargoAmountElements[i].value);
+
+            if (!cargoType || isNaN(cargoAmount)) {
+                alert("Please fill in all cargo details for the Direct mission.");
+                return;
+            }
+
+            cargoEntries.push({
+                type: cargoType,
+                quantity: cargoAmount,
+                from: startingPoint,
+                to: destinationPoint,
+            });
+        }
+    } else if (missionType === "multipleDropOff") {
+        // Multiple Drop Off: Single Pickup with Multiple Destinations
+        rewardAmount = parseFloat(document.getElementById("rewardAmount").value);
+        startingPoint = document.getElementById("startPoint").value;
+
+        // Validate inputs
+        if (isNaN(rewardAmount) || !startingPoint) {
+            alert("Please fill in all mission details.");
+            return;
+        }
+
+        // Extract all destination entries
+        const destEntries = document.querySelectorAll("#missionDetails .location-entry");
+
+        destEntries.forEach((entry) => {
+            const destSelect = entry.querySelector(".destPointSelect");
+            const cargoTypeInputs = entry.querySelectorAll(".cargo-type");
+            const cargoAmountInputs = entry.querySelectorAll(".cargo-quantity");
+
+            const destinationPoint = destSelect.value;
+
+            if (!destinationPoint) {
+                alert("Please select all destination points.");
+                return;
+            }
+
+            // Ensure cargo entries are matched
+            if (cargoTypeInputs.length !== cargoAmountInputs.length) {
+                alert("Mismatch in cargo entries within destinations. Please ensure all cargo types have corresponding quantities.");
+                return;
+            }
+
+            // Iterate over each cargo entry for this destination
+            for (let i = 0; i < cargoTypeInputs.length; i++) {
+                const cargoType = cargoTypeInputs[i].value.trim();
+                const cargoAmount = parseFloat(cargoAmountInputs[i].value);
+
+                if (!cargoType || isNaN(cargoAmount)) {
+                    alert("Please fill in all cargo details for the Multiple Drop Off mission.");
+                    return;
+                }
+
+                cargoEntries.push({
+                    type: cargoType,
+                    quantity: cargoAmount,
+                    from: startingPoint,
+                    to: destinationPoint,
+                });
+            }
+        });
+    } else if (missionType === "multiplePickUp") {
+        // Multiple Pick Up: Multiple Pickups with Single Destination
+        rewardAmount = parseFloat(document.getElementById("rewardAmount").value);
+        destinationPoint = document.getElementById("destPoint").value;
+
+        // Validate inputs
+        if (isNaN(rewardAmount) || !destinationPoint) {
+            alert("Please fill in all mission details.");
+            return;
+        }
+
+        // Extract all pickup entries
+        const pickEntries = document.querySelectorAll("#missionDetails .location-entry");
+
+        pickEntries.forEach((entry) => {
+            const pickSelect = entry.querySelector(".startPointSelect");
+            const cargoTypeInputs = entry.querySelectorAll(".cargo-type");
+            const cargoAmountInputs = entry.querySelectorAll(".cargo-quantity");
+
+            const startPoint = pickSelect.value;
+
+            if (!startPoint) {
+                alert("Please select all pickup points.");
+                return;
+            }
+
+            // Ensure cargo entries are matched
+            if (cargoTypeInputs.length !== cargoAmountInputs.length) {
+                alert("Mismatch in cargo entries within pickups. Please ensure all cargo types have corresponding quantities.");
+                return;
+            }
+
+            // Iterate over each cargo entry for this pickup
+            for (let i = 0; i < cargoTypeInputs.length; i++) {
+                const cargoType = cargoTypeInputs[i].value.trim();
+                const cargoAmount = parseFloat(cargoAmountInputs[i].value);
+
+                if (!cargoType || isNaN(cargoAmount)) {
+                    alert("Please fill in all cargo details for the Multiple Pick Up mission.");
+                    return;
+                }
+
+                cargoEntries.push({
+                    type: cargoType,
+                    quantity: cargoAmount,
+                    from: startPoint,
+                    to: destinationPoint,
+                });
+            }
+        });
+    }
+
+    // Create mission object
+    const mission = {
+        type: missionType,
+        rewardAmount: rewardAmount,
+        cargoEntries: cargoEntries,
+    };
+
+    // Add mission to the mission list and process events
+    addMissionToList(mission);
+
+    // Clear mission form
+    clearMissionForm();
+});
+
+// Function to clear mission input form
+function clearMissionForm() {
+    document.getElementById("missionType").value = "";
+    const missionDetails = document.getElementById("missionDetails");
+    missionDetails.innerHTML = "";
+}
+
+// Add Event Listener to Clear All Missions Button
+document.getElementById("clearAllMissionsButton").addEventListener("click", clearAllMissions);
+
+/**
+ * Clears all missions from the missions array, events array, and the UI.
+ */
+function clearAllMissions() {
+    // Confirm action with the user
+    const confirmClear = confirm("Are you sure you want to clear all missions?");
+    if (!confirmClear) return;
+
+    // Clear the missions and events arrays
+    missions.length = 0; // Efficiently clears the array
+    events.length = 0;
+
+    // Remove all <li> elements from the mission list
+    const missionList = document.getElementById("missionList");
+    while (missionList.firstChild) {
+        missionList.removeChild(missionList.firstChild);
+    }
+
+    // Disable Calculate Route button if no missions
+    document.getElementById("calculateRouteButton").disabled = true;
+
+    // Optional: Notify the user
+    alert("All missions have been cleared.");
+    console.log("All missions and associated events have been cleared.");
+}
+
+/**
+ * Deletes a mission based on its missionID.
+ *
+ * @param {number} missionID - The unique identifier of the mission to delete.
+ * @param {HTMLElement} missionElement - The <li> element corresponding to the mission.
+ */
+function deleteMission(missionID, missionElement) {
+    // Confirm deletion with the user
+    const confirmDeletion = confirm("Are you sure you want to delete this mission?");
+    if (!confirmDeletion) return;
+
+    // Remove mission from the missions array
+    const missionIndex = missions.findIndex(m => m.missionID === missionID);
+    if (missionIndex !== -1) {
+        missions.splice(missionIndex, 1);
+    } else {
+        console.warn(`Mission with ID ${missionID} not found in missions array.`);
+    }
+
+    // Remove associated events from the events array
+    events = events.filter(event => event.missionID !== missionID);
+
+    // Remove the <li> element from the DOM
+    if (missionElement && missionElement.parentNode) {
+        missionElement.parentNode.removeChild(missionElement);
+    } else {
+        console.warn(`Mission element for ID ${missionID} not found in the DOM.`);
+    }
+
+    // Disable Calculate Route button if no missions remain
+    if (missions.length === 0) {
+        document.getElementById("calculateRouteButton").disabled = true;
+    }
+
+    // Optional: Notify the user
+    alert(`Mission ID ${missionID} has been deleted.`);
+    console.log(`Mission ID ${missionID} and its events have been deleted.`);
+}
+
+
+
+// Modify the addMissionToList function to include delete buttons
+let missionIDCounter = 1;
+function addMissionToList(mission) {
+    // Assign a missionID based on the order
+    mission.missionID = missionIDCounter++;
+    
+    // Add the mission to the global list
+    missions.push(mission);
+
+    // Process cargo entries into events
+    mission.cargoEntries.forEach((entry) => {
+        const pickupID = uniqueID();
+        const dropoffID = uniqueID();
+
+        // Create pickup event
+        const pickupEvent = {
+            id: pickupID,
+            type: "pickup",
+            location: entry.from,
+            cargo: [{ type: entry.type, quantity: entry.quantity, destination: entry.to }],
+            correspondingDropOffID: dropoffID,
+            missionID: mission.missionID,
+        };
+
+        // Create drop-off event
+        const dropoffEvent = {
+            id: dropoffID,
+            type: "dropoff",
+            location: entry.to,
+            cargo: [{ type: entry.type, quantity: entry.quantity, origin: entry.from }],
+            correspondingPickupID: pickupID,
+            missionID: mission.missionID,
+        };
+
+        // Add events to the global events list
+        events.push(pickupEvent);
+        events.push(dropoffEvent);
+    });
+
+    // Update the mission list UI
+    const missionList = document.getElementById("missionList");
+    const li = document.createElement("li");
+    li.setAttribute("data-mission-id", mission.missionID); // Assign missionID to <li>
+
+    let missionText = `<strong>Type:</strong> ${formatMissionType(
+        mission.type
+    )}<br>`;
+    missionText += `<strong>Cargo:</strong><br>`;
+    mission.cargoEntries.forEach((entry) => {
+        missionText += `&nbsp;&nbsp;- ${entry.quantity} SCU of ${entry.type} from ${entry.from} to ${entry.to}<br>`;
+    });
+    missionText += `<strong>Reward:</strong> ${mission.rewardAmount} Credits<br>`;
+
+    li.innerHTML = missionText;
+
+    // Create Delete Button
+    const deleteButton = document.createElement("button");
+    deleteButton.innerText = "Delete Mission";
+    deleteButton.className = "delete-mission-button"; // Assign a class for styling
+    deleteButton.style.marginTop = "10px"; // Add some spacing
+    deleteButton.style.backgroundColor = "#E74C3C"; // Red background
+    deleteButton.style.color = "#fff"; // White text
+    deleteButton.style.padding = "5px 10px";
+    deleteButton.style.border = "none";
+    deleteButton.style.borderRadius = "3px";
+    deleteButton.style.cursor = "pointer";
+    deleteButton.style.fontSize = "12px";
+    deleteButton.style.fontWeight = "bold";
+
+    // Add Event Listener to Delete Button
+    deleteButton.addEventListener("click", () => {
+        deleteMission(mission.missionID, li);
+    });
+
+    // Append Delete Button to <li>
+    li.appendChild(deleteButton);
+
+    // Append <li> to mission list
+    missionList.appendChild(li);
+
+    // Enable Calculate Route button
+    document.getElementById("calculateRouteButton").disabled = false;
+}
+
+// Disable Calculate Route button on initial load
+document.getElementById("calculateRouteButton").disabled = true;
+
+
+// ========================
+    // Update Cargo Capacity Validation (Optional)
+    // ========================
+
+    /**
+     * Validates the maximum cargo capacity to ensure it's a positive integer.
+     *
+     * @param {number} capacity - The cargo capacity input by the user.
+     * @returns {boolean} - True if valid, false otherwise.
+     */
+     function validateCargoCapacity(capacity) {
+        return Number.isInteger(capacity) && capacity > 0;
+    }
+
+    // Update the Calculate Route Button Handler to incorporate validation
+    document.getElementById("calculateRouteButton").addEventListener("click", async () => {
+        console.log("Calculate Route button clicked.");
+     
+        // Retrieve the maximum cargo capacity
+        const cargoCapacityInput = document.getElementById("cargoCapacity").value;
+        const cargoCapacity = parseInt(cargoCapacityInput);
+    
+        if (!validateCargoCapacity(cargoCapacity)) {
+            alert("Please enter a valid maximum cargo capacity (positive integer).");
+            console.warn("Invalid cargo capacity:", cargoCapacity);
+            return;
+        }
+    
+        if (missions.length === 0) {
+            alert("Please add at least one mission.");
+            console.warn("No missions found.");
+            return;
+        }
+    
+        const selectedStartingLocationName = document.getElementById("startingLocation").value;
+        if (!selectedStartingLocationName) {
+            alert("Please select a starting location.");
+            console.warn("No starting location selected.");
+            return;
+        }
+    
+        const startingLocation = allPOIs.find((p) => p.name === selectedStartingLocationName);
+        if (!startingLocation) {
+            alert("Selected starting location is invalid.");
+            console.error("Selected starting location not found in allPOIs:", selectedStartingLocationName);
+            return;
+        }
+    
+        // Read algorithm parameters from input fields
+        const populationSize = parseInt(document.getElementById("populationSize").value) || 100;
+        const generations = parseInt(document.getElementById("generations").value) || 200;
+        const mutationRate = parseFloat(document.getElementById("mutationRate").value) || 0.1;
+    
+        // Validate parameters
+        if (populationSize < 10 || generations < 10 || mutationRate < 0 || mutationRate > 1) {
+            alert("Please enter valid algorithm parameters.");
+            console.warn("Invalid algorithm parameters:", { populationSize, generations, mutationRate });
+            return;
+        }
+    
+        // Show loading bar
+        const loadingBarContainer = document.getElementById("loadingBarContainer");
+        const loadingBar = document.getElementById("loadingBar");
+        loadingBarContainer.style.display = "block";
+        loadingBar.style.width = "0%";
+    
+        // Disable the calculate button to prevent multiple clicks
+        const calculateButton = document.getElementById("calculateRouteButton");
+        calculateButton.disabled = true;
+        calculateButton.innerText = "Calculating...";
+    
+        // Reset the graph data
+        Plotly.update('routeLengthGraph', { x: [[]], y: [[]] }, {});
+    
+        try {
+            console.log("Starting GA to calculate optimal route.");
+            // Calculate the optimal route asynchronously
+            const { optimalRoute, poiMap, distanceMap, routeLengths } = await calculateOptimalRoute(
+                startingLocation,
+                events, // Original events; 'calculateOptimalRoute' will handle splitting
+                allPOIs,
+                populationSize,
+                generations,
+                mutationRate,
+                updateLoadingBar,
+                cargoCapacity // Pass the max cargo capacity here
+            );
+            // Execute the route to simulate cargo loading and unloading
+            const executedRoute = executeRoute(optimalRoute, startingLocation, cargoCapacity);
+            // Debugging logs
+            console.log("Optimal Route:", optimalRoute);
+            console.log("POI Map:", poiMap);
+            console.log("Distance Map:", distanceMap);
+    
+            // Inspect each event in the optimal route
+            optimalRoute.forEach((event, index) => {
+                console.log(`Event ${index + 1}:`, event);
+            });
+    
+            // Check if optimalRoute is an array
+            if (!Array.isArray(optimalRoute)) {
+                alert("Failed to calculate an optimal route. Please try again.");
+                console.error("Optimal Route is not an array:", optimalRoute);
+                // Hide loading bar and re-enable button
+                loadingBarContainer.style.display = "none";
+                calculateButton.disabled = false;
+                calculateButton.innerText = "Calculate Optimal Route";
+                return;
+            }
+    
+            if (optimalRoute.length === 0) {
+                alert("No valid route found. Please adjust your missions or starting location.");
+                console.warn("Optimal Route is empty.");
+                // Hide loading bar and re-enable button
+                loadingBarContainer.style.display = "none";
+                calculateButton.disabled = false;
+                calculateButton.innerText = "Calculate Optimal Route";
+                return;
+            }
+    
+            // Calculate total distance
+            const totalDistance = calculateTotalDistance(optimalRoute, startingLocation, poiMap, distanceMap);
+            console.log("Total Distance:", totalDistance);
+    
+            // Calculate total reward
+            const totalReward = calculateTotalReward(missions);
+            console.log("Total Reward:", totalReward);
+    
+            // Generate route summary
+            const routeSummary = generateRouteSummaryFromExecution(executedRoute);
+            console.log("Route Summary:", routeSummary);
+    
+            // Update the map with the route
+            updateRouteOnMap(optimalRoute, startingLocation);
+    
+            // Update the summary
+            updateSummary(routeSummary, totalDistance, totalReward, startingLocation, cargoCapacity);
+            // Finalize the graph with all route lengths
+            routeLengths.forEach((length, index) => {
+                Plotly.extendTraces('routeLengthGraph', {
+                    x: [[index + 1]],
+                    y: [[length]]
+                }, [0]);
+            });
+    
+            // Optionally, adjust the layout to fit all data
+            Plotly.relayout('routeLengthGraph', {
+                'xaxis.range': [0, Math.max(50, generations + 10)],
+                'yaxis.range': [0, Math.max(...routeLengths) + 500]
+            });
+    
+        } catch (error) {
+            console.error("Error during route calculation:", error);
+            alert("An error occurred during route calculation. Please check the console for details.");
+        } finally {
+            // Hide loading bar and re-enable button
+            loadingBarContainer.style.display = "none";
+            calculateButton.disabled = false;
+            calculateButton.innerText = "Calculate Optimal Route";
+            console.log("Route calculation process completed.");
+        }
+        
+    });
+
+ // ========================
+// Web Worker Setup
+// ========================
+// Define the worker code as a string
+const workerCode = `
+// Worker code starts here
+
+// Helper functions used in the GA
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function shuffleArray(array) {
+    const newArr = array.slice();
+    for (let i = newArr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+    }
+    return newArr;
+}
+
+// Define the rest of the helper functions used in the GA
+// (Include all functions needed by the worker)
+
+// ... (Include createPOIMap, precomputeDistanceMap, generateInitialPopulation, createValidRoute, calculateFitness, selection, crossoverPopulation, crossover, precedencePreservingCrossover, mutate, repairRoute, splitEventsByCargoCapacity functions here)
+
+// Worker message handler
+self.onmessage = async function(e) {
+    const {
+        startingLocation,
+        splitEvents,
+        allPOIs,
+        populationSize,
+        generations,
+        mutationRate,
+        cargoCapacity
+    } = e.data;
+
+    // Precompute POI Map and Distance Map
+    const poiMap = createPOIMap(allPOIs);
+    const distanceMap = precomputeDistanceMap(allPOIs);
+
+    // Generate initial population
+    let population = generateInitialPopulation(populationSize, splitEvents);
+
+    let bestRoute = null;
+    let bestFitness = -Infinity;
+    let routeLengths = []; // To store route lengths over generations
+
+    for (let generation = 0; generation < generations; generation++) {
+        // Evaluate fitness of population
+        const fitnessValues = [];
+        for (let route of population) {
+            const { fitness, totalDistance } = calculateFitness(route, startingLocation, poiMap, distanceMap, cargoCapacity);
+            fitnessValues.push({ route, fitness, totalDistance });
+        }
+
+        // Sort population by fitness (higher fitness is better)
+        fitnessValues.sort((a, b) => b.fitness - a.fitness);
+        population = fitnessValues.map(item => item.route);
+
+        // Update best route
+        if (fitnessValues[0].fitness > bestFitness) {
+            bestFitness = fitnessValues[0].fitness;
+            bestRoute = fitnessValues[0].route;
+            const currentRouteLength = fitnessValues[0].totalDistance;
+            routeLengths.push(currentRouteLength); // Store route length
+        }
+
+        // Report progress at every generation
+        const progress = ((generation + 1) / generations) * 100;
+        self.postMessage({
+            type: 'progress',
+            progress: progress,
+            bestRouteSoFar: bestRoute,
+            generation: generation + 1,
+            currentRouteLength: fitnessValues[0].totalDistance // Use current route length
+        });
+
+        // Allow UI updates
+        await sleep(0);
+
+        // Selection with elitism
+        const eliteCount = Math.floor(populationSize * 0.1);
+        const selectedRoutes = selection(population, fitnessValues, eliteCount);
+
+        // Crossover
+        let offspring = crossoverPopulation(selectedRoutes);
+
+        // Mutation
+        for (let i = 0; i < offspring.length; i++) {
+            offspring[i] = mutate(offspring[i], mutationRate);
+        }
+
+        // Repair offspring to ensure validity
+        for (let i = 0; i < offspring.length; i++) {
+            offspring[i] = repairRoute(offspring[i], splitEvents, poiMap, cargoCapacity);
+        }
+
+        // Create new population
+        population = [...selectedRoutes, ...offspring];
+
+        // Optional: Limit population size if necessary
+        if (population.length > populationSize) {
+            population = population.slice(0, populationSize);
+        }
+    }
+
+    // Send final result to main thread
+    self.postMessage({
+        type: 'result',
+        optimalRoute: bestRoute,
+        poiMap: poiMap,
+        distanceMap: distanceMap,
+        routeLengths: routeLengths
+    });
+};
+
+// Worker code ends here
+`;
+
+// Create a Blob from the worker code
+const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
+const workerURL = URL.createObjectURL(workerBlob);
+
+// Create the Web Worker
+let gaWorker = new Worker(workerURL);
+
+// ========================
+// End of Web Worker Setup
+// ========================
+
+// Handle messages from the worker
+gaWorker.onmessage = function(e) {
+    const data = e.data;
+    if (data.type === 'progress') {
+        // Update the loading bar and progress
+        updateLoadingBar(
+            data.progress.toFixed(2),
+            data.bestRouteSoFar,
+            startingLocation, // Now accessible
+            data.generation,
+            data.currentRouteLength
+        );
+    } else if (data.type === 'result') {
+        // Handle the final result
+        handleGAResult(
+            data.optimalRoute,
+            data.poiMap,
+            data.distanceMap,
+            data.routeLengths
+        );
+    }
+};
+
+gaWorker.onerror = function(error) {
+    console.error('Error in GA Worker:', error);
+    alert('An error occurred during route calculation.');
+    // Re-enable the calculate button
+    const calculateButton = document.getElementById('calculateRouteButton');
+    calculateButton.disabled = false;
+    calculateButton.innerText = 'Calculate Optimal Route';
+
+    // Hide loading bar
+    const loadingBarContainer = document.getElementById('loadingBarContainer');
+    loadingBarContainer.style.display = 'none';
+};
+
+// Modify the Calculate Route Button Handler to use the worker
+document.getElementById("calculateRouteButton").addEventListener("click", async () => {
+    console.log("Calculate Route button clicked.");
+
+    // Retrieve the maximum cargo capacity
+    const cargoCapacityInput = document.getElementById("cargoCapacity").value;
+    const cargoCapacity = parseInt(cargoCapacityInput);
+
+    if (!validateCargoCapacity(cargoCapacity)) {
+        alert("Please enter a valid maximum cargo capacity (positive integer).");
+        console.warn("Invalid cargo capacity:", cargoCapacity);
+        return;
+    }
+
+    if (missions.length === 0) {
+        alert("Please add at least one mission.");
+        console.warn("No missions found.");
+        return;
+    }
+
+    const selectedStartingLocationName = document.getElementById("startingLocation").value;
+    if (!selectedStartingLocationName) {
+        alert("Please select a starting location.");
+        console.warn("No starting location selected.");
+        return;
+    }
+
+    startingLocation = allPOIs.find((p) => p.name === selectedStartingLocationName);
+    if (!startingLocation) {
+        alert("Selected starting location is invalid.");
+        console.error("Selected starting location not found in allPOIs:", selectedStartingLocationName);
+        return;
+    }
+
+    // Read algorithm parameters from input fields
+    const populationSize = parseInt(document.getElementById("populationSize").value) || 100;
+    const generations = parseInt(document.getElementById("generations").value) || 200;
+    const mutationRate = parseFloat(document.getElementById("mutationRate").value) || 0.1;
+
+    // Validate parameters
+    if (populationSize < 10 || generations < 10 || mutationRate < 0 || mutationRate > 1) {
+        alert("Please enter valid algorithm parameters.");
+        console.warn("Invalid algorithm parameters:", { populationSize, generations, mutationRate });
+        return;
+    }
+
+    // Show loading bar
+    const loadingBarContainer = document.getElementById("loadingBarContainer");
+    const loadingBar = document.getElementById("loadingBar");
+    loadingBarContainer.style.display = "block";
+    loadingBar.style.width = "0%";
+
+    // Disable the calculate button to prevent multiple clicks
+    const calculateButton = document.getElementById("calculateRouteButton");
+    calculateButton.disabled = true;
+    calculateButton.innerText = "Calculating...";
+
+    // Reset the graph data
+    Plotly.update('routeLengthGraph', { x: [[]], y: [[]] }, {});
+
+    try {
+        console.log("Starting GA to calculate optimal route.");
+
+        // Preprocess events to split overloaded cargo entries
+        const splitEvents = splitEventsByCargoCapacity(events, cargoCapacity);
+        console.log("Events after splitting:", splitEvents);
+
+        // Prepare data to send to the worker
+        const workerData = {
+            startingLocation,
+            splitEvents,
+            allPOIs,
+            populationSize,
+            generations,
+            mutationRate,
+            cargoCapacity
+        };
+
+        // Start the GA computation in the worker
+        gaWorker.postMessage(workerData);
+
+    } catch (error) {
+        console.error("Error during route calculation:", error);
+        alert("An error occurred during route calculation. Please check the console for details.");
+
+        // Hide loading bar and re-enable button
+        loadingBarContainer.style.display = "none";
+        calculateButton.disabled = false;
+        calculateButton.innerText = "Calculate Optimal Route";
+    }
+
+});
+
+// Function to handle the final result from the worker
+function handleGAResult(optimalRoute, poiMap, distanceMap, routeLengths) {
+    // Execute the route to simulate cargo loading and unloading
+    const executedRoute = executeRoute(optimalRoute, startingLocation, cargoCapacity);
+    // Debugging logs
+    console.log("Optimal Route:", optimalRoute);
+    console.log("POI Map:", poiMap);
+    console.log("Distance Map:", distanceMap);
+
+    // Inspect each event in the optimal route
+    optimalRoute.forEach((event, index) => {
+        console.log(`Event ${index + 1}:`, event);
+    });
+
+    // Check if optimalRoute is an array
+    if (!Array.isArray(optimalRoute)) {
+        alert("Failed to calculate an optimal route. Please try again.");
+        console.error("Optimal Route is not an array:", optimalRoute);
+        // Hide loading bar and re-enable button
+        const loadingBarContainer = document.getElementById("loadingBarContainer");
+        loadingBarContainer.style.display = "none";
+        const calculateButton = document.getElementById("calculateRouteButton");
+        calculateButton.disabled = false;
+        calculateButton.innerText = "Calculate Optimal Route";
+        return;
+    }
+
+    if (optimalRoute.length === 0) {
+        alert("No valid route found. Please adjust your missions or starting location.");
+        console.warn("Optimal Route is empty.");
+        // Hide loading bar and re-enable button
+        const loadingBarContainer = document.getElementById("loadingBarContainer");
+        loadingBarContainer.style.display = "none";
+        const calculateButton = document.getElementById("calculateRouteButton");
+        calculateButton.disabled = false;
+        calculateButton.innerText = "Calculate Optimal Route";
+        return;
+    }
+
+    // Calculate total distance
+    const totalDistance = calculateTotalDistance(optimalRoute, startingLocation, poiMap, distanceMap);
+    console.log("Total Distance:", totalDistance);
+
+    // Calculate total reward
+    const totalReward = calculateTotalReward(missions);
+    console.log("Total Reward:", totalReward);
+
+    // Generate route summary
+    const routeSummary = generateRouteSummaryFromExecution(executedRoute);
+    console.log("Route Summary:", routeSummary);
+
+    // Update the map with the route
+    updateRouteOnMap(optimalRoute, startingLocation);
+
+    // Update the summary
+    updateSummary(routeSummary, totalDistance, totalReward, startingLocation, cargoCapacity);
+
+    // Finalize the graph with all route lengths
+    routeLengths.forEach((length, index) => {
+        Plotly.extendTraces('routeLengthGraph', {
+            x: [[index + 1]],
+            y: [[length]]
+        }, [0]);
+    });
+
+    // Optionally, adjust the layout to fit all data
+    Plotly.relayout('routeLengthGraph', {
+        'xaxis.range': [0, Math.max(50, routeLengths.length + 10)],
+        'yaxis.range': [0, Math.max(...routeLengths) + 500]
+    });
+
+    // Hide loading bar and re-enable button
+    const loadingBarContainer = document.getElementById("loadingBarContainer");
+    loadingBarContainer.style.display = "none";
+    const calculateButton = document.getElementById("calculateRouteButton");
+    calculateButton.disabled = false;
+    calculateButton.innerText = "Calculate Optimal Route";
+    console.log("Route calculation process completed.");
+}
+
+// ========================
+// Additional Utility Functions
+// ========================
+
+/**
+ * Updates the route on the map using Plotly with arrowheads indicating direction.
+ *
+ * @param {Array} route - The route to display on the map. Each element should be an event with a location.
+ * @param {Object} startingLocation - The starting location object with `x` and `y` coordinates.
+ * @param {boolean} isTemporary - Flag indicating if the route is temporary (used for progress updates).
+ */
+ function updateRouteOnMap(route, startingLocation, isTemporary = false) {
+    // Remove existing route leg traces and arrow annotations
+    plotData = plotData.filter(trace => {
+        return !(trace.name.startsWith("Route Leg") || trace.name.startsWith("Temporary Route Leg"));
+    });
+
+    // Remove existing route arrow annotations
+    plotLayout.annotations = plotLayout.annotations.filter(annotation => {
+        return !(annotation.name && annotation.name.startsWith("route-arrow"));
+    });
+
+    if (route.length === 0) return; // No route to display
+
+    // Prepare route legs by extracting coordinates
+    const routeLegs = [];
+    const routeX = [startingLocation.x];
+    const routeY = [startingLocation.y];
+
+    route.forEach((event) => {
+        const poi = allPOIs.find(p => p.name === event.location);
+        if (poi) {
+            routeX.push(poi.x);
+            routeY.push(poi.y);
+        } else {
+            console.error("Location not found in allPOIs:", event.location);
+        }
+    });
+
+    for (let i = 0; i < routeX.length - 1; i++) {
+        routeLegs.push({
+            from: { x: routeX[i], y: routeY[i] },
+            to: { x: routeX[i + 1], y: routeY[i + 1] }
+        });
+    }
+
+    // Define the route color based on whether it's temporary
+    const routeColor = isTemporary ? darkGreen : brightGreen;
+
+    // Define the offset percentage (e.g., 2%)
+    const offsetPercentage = 0.00005;
+
+    // Plot each leg with the defined green color and solid line
+    routeLegs.forEach((leg, index) => {
+        // Calculate the distance between 'from' and 'to'
+        const dx = leg.to.x - leg.from.x;
+        const dy = leg.to.y - leg.from.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Calculate the offset distance
+        const offsetDistance = distance * offsetPercentage;
+
+        // Normalize the direction vector
+        const unitDx = dx / distance;
+        const unitDy = dy / distance;
+
+        // Calculate the adjusted 'to' coordinates
+        const adjustedToX = leg.to.x - unitDx * offsetDistance;
+        const adjustedToY = leg.to.y - unitDy * offsetDistance;
+
+        // Create the adjusted leg trace
+        const legTrace = {
+            x: [leg.from.x, adjustedToX],
+            y: [leg.from.y, adjustedToY],
+            mode: "lines",
+            type: "scatter",
+            name: isTemporary ? `Temporary Route Leg ${index + 1}` : `Route Leg ${index + 1}`,
+            line: {
+                color: routeColor,
+                width: 2,
+                dash: 'solid' // Solid line
+            },
+            hoverinfo: "none",
+            showlegend: false,
+        };
+        plotData.push(legTrace);
+
+        // Add arrow annotation pointing to the adjusted 'to' point
+        plotLayout.annotations.push({
+            x: adjustedToX,
+            y: adjustedToY,
+            ax: leg.from.x,
+            ay: leg.from.y,
+            xref: 'x',
+            yref: 'y',
+            axref: 'x',
+            ayref: 'y',
+            text: '', // No text
+            showarrow: true,
+            arrowhead: 2, // Arrow style
+            arrowsize: 2.5,
+            arrowwidth: 1,
+            arrowcolor: arrowColor,
+            name: `route-arrow-${index + 1}`, // Unique name to manage annotations
+            hoverinfo: "none",
+        });
+    });
+
+    // Update the plot with the new route legs and annotations
+    Plotly.react("map", plotData, plotLayout, { responsive: true, scrollZoom: true });
+}
+
+/**
+ * Updates the summary section with the route details, including checkboxes for each cargo delivery.
+ *
+ * @param {Array} routeSummary - The executed route with actions and cargo loads.
+ * @param {number} totalDistance - Total distance of the route.
+ * @param {number} totalReward - Total reward from the missions.
+ * @param {Object} startingLocation - The starting location object.
+ * @param {number} cargoCapacity - The maximum cargo capacity.
+ */
+ function updateSummary(routeSummary, totalDistance, totalReward, startingLocation, cargoCapacity) {
+    console.log("updateSummary called with:", { routeSummary, totalDistance, totalReward, startingLocation });
+
+    // Update total distance and reward in the DOM
+    const totalDistanceElem = document.getElementById("totalDistance");
+    const totalRewardElem = document.getElementById("totalReward");
+    const routeDetails = document.getElementById("routeDetails");
+
+    if (!totalDistanceElem || !totalRewardElem || !routeDetails) {
+        console.error("One or more summary DOM elements are missing.");
+        return;
+    }
+
+    totalDistanceElem.innerText = `Total Distance: ${totalDistance.toFixed(2)} Gm`;
+    totalRewardElem.innerText = `Total Reward: ${totalReward} Credits`;
+
+    routeDetails.innerHTML = ""; // Clear existing summary
+
+    // Add starting location as the first stop
+    const startLi = document.createElement("li");
+    startLi.innerHTML = `<strong>Start at: ${startingLocation.name}</strong>`;
+    routeDetails.appendChild(startLi);
+
+    let visitCounts = {};  // Track visit counts per location
+    let condensedSummary = [];
+    let currentStop = null;
+    let lastLocation = null;
+
+    // Condense the route summary into stops with pickups and drop-offs
+    routeSummary.forEach((step) => {
+        const location = step.location;
+
+        // Initialize visit count if this is the first encounter
+        if (!visitCounts[location]) {
+            visitCounts[location] = 1;
+        } else if (lastLocation !== location) {
+            // If the location is revisited but not consecutively, increment the visit count
+            visitCounts[location]++;
+        }
+
+        // If this is a new location or there are no current stops, create a new entry
+        if (lastLocation !== location) {
+            // Before pushing the currentStop, check if it has any actions
+            if (currentStop && (currentStop.pickUps.length > 0 || currentStop.dropOffs.length > 0)) {
+                condensedSummary.push(currentStop); // Push the previous stop to the summary
+            }
+            currentStop = { 
+                location: location, 
+                pickUps: [], 
+                dropOffs: [], 
+                visitCount: visitCounts[location],
+                cargoLoad: step.cargoLoad, // Add cargoLoad to currentStop
+                pickUpSCU: 0, // Total SCU picked up at this stop
+                dropOffSCU: 0 // Total SCU dropped off at this stop
+            };
+        }
+
+        // Differentiate between pickups and drop-offs
+        if (step.actions) {
+            step.actions.forEach(action => {
+                if (action.includes("Pick Up")) {
+                    currentStop.pickUps.push(action);
+
+                    // Extract quantity from action
+                    const matches = action.match(/Pick Up (\d+) SCU/);
+                    if (matches) {
+                        currentStop.pickUpSCU += parseInt(matches[1]);
+                    }
+                } else if (action.includes("Drop Off")) {
+                    currentStop.dropOffs.push(action);
+
+                    // Extract quantity from action
+                    const matches = action.match(/Drop Off (\d+) SCU/);
+                    if (matches) {
+                        currentStop.dropOffSCU += parseInt(matches[1]);
+                    }
+                }
+            });
+        }
+
+        // Update lastLocation for tracking consecutive visits
+        lastLocation = location;
+    });
+
+    // Push the final stop to the condensed summary if it has actions
+    if (currentStop && (currentStop.pickUps.length > 0 || currentStop.dropOffs.length > 0)) {
+        condensedSummary.push(currentStop);
+    }
+
+    console.log("Condensed Summary:", condensedSummary);
+
+    // Render the condensed summary
+    condensedSummary.forEach((stop, index) => {
+        const visitSuffix = stop.visitCount > 1 ? ` (Visit ${stop.visitCount})` : '';
+        const li = document.createElement("li");
+
+        // Create the stop header with larger font and additional styling
+        const stopHeader = document.createElement("div");
+        stopHeader.className = "route-stop-header";
+        stopHeader.innerText = `Stop ${index + 1}: ${stop.location}${visitSuffix}`;
+        li.appendChild(stopHeader);
+
+        // Pickups Section
+        if (stop.pickUps.length > 0) {
+            const pickupsHeader = document.createElement("div");
+            pickupsHeader.className = "route-pickups-header"; // Use the new pickups header class
+            pickupsHeader.innerText = "Pickups";
+            li.appendChild(pickupsHeader);
+
+            const pickUpSummary = organizeSummary(stop.pickUps);
+            Object.keys(pickUpSummary).forEach((cargoType) => {
+                const cargo = pickUpSummary[cargoType];
+                
+                // Create cargo type summary
+                const cargoSummary = document.createElement("div");
+                cargoSummary.className = "cargo-summary";
+                cargoSummary.innerText = `${cargoType} [${cargo.total} SCU to collect]`;
+                li.appendChild(cargoSummary);
+
+                // List individual cargo details with checkboxes
+                cargo.breakdown.forEach((entry) => {
+                    const cargoDetail = document.createElement("div");
+                    cargoDetail.className = "cargo-detail";
+
+                    // Create checkbox
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.id = `mission-${entry.missionID}-cargo-${cargoType}-${entry.location}`;
+                    checkbox.className = "cargo-checkbox";
+
+                    // Create label
+                    const label = document.createElement("label");
+                    label.htmlFor = checkbox.id;
+                    label.innerText = `${entry.quantity} SCU [Mission ${entry.missionID}, Destination: ${entry.location}]`;
+
+                    // Append checkbox and label to cargoDetail
+                    cargoDetail.appendChild(checkbox);
+                    cargoDetail.appendChild(label);
+
+                    li.appendChild(cargoDetail);
+                });
+            });
+        }
+
+        // Drop offs Section
+        if (stop.dropOffs.length > 0) {
+            const dropOffsHeader = document.createElement("div");
+            dropOffsHeader.className = "route-dropoffs-header"; // Use the new drop-offs header class
+            dropOffsHeader.innerText = "Drop offs";
+            li.appendChild(dropOffsHeader);
+
+            const dropOffSummary = organizeSummary(stop.dropOffs);
+            Object.keys(dropOffSummary).forEach((cargoType) => {
+                const cargo = dropOffSummary[cargoType];
+                
+                // Create cargo type summary
+                const cargoSummary = document.createElement("div");
+                cargoSummary.className = "cargo-summary";
+                cargoSummary.innerText = `${cargoType} [${cargo.total} SCU to deliver]`;
+                li.appendChild(cargoSummary);
+
+                // List individual cargo details with checkboxes
+                cargo.breakdown.forEach((entry) => {
+                    const cargoDetail = document.createElement("div");
+                    cargoDetail.className = "cargo-detail";
+
+                    // Create checkbox
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.id = `mission-${entry.missionID}-cargo-${cargoType}-${entry.origin}`;
+                    checkbox.className = "cargo-checkbox";
+
+                    // Create label
+                    const label = document.createElement("label");
+                    label.htmlFor = checkbox.id;
+                    label.innerText = `${entry.quantity} SCU [Mission ${entry.missionID}, Origin: ${entry.location}]`;
+
+                    // Append checkbox and label to cargoDetail
+                    cargoDetail.appendChild(checkbox);
+                    cargoDetail.appendChild(label);
+
+                    li.appendChild(cargoDetail);
+                });
+            });
+        }
+
+        // Display pick up, drop off, and current cargo load with additional spacing
+        const cargoLoadInfo = document.createElement("div");
+        cargoLoadInfo.className = "cargo-load-info"; // Assign the new class
+        cargoLoadInfo.innerHTML = `<strong>Pick up: ${stop.pickUpSCU} SCU Drop off: ${stop.dropOffSCU}`;
+        li.appendChild(cargoLoadInfo);
+
+        // Append to route details
+        routeDetails.appendChild(li);
+    });
+
+    console.log("Summary updated successfully.");
+
+    /**
+     * Function to organize actions by cargo type, ensuring uniqueness.
+     * @param {Array} actions - Array of action strings
+     * @returns {Object} - Grouped summary by cargo type
+     */
+    function organizeSummary(actions) {
+        let summaryByCargoType = {};
+        const uniqueEntries = new Set(); // To track unique actions
+
+        actions.forEach((action) => {
+            // Enhanced regex to capture all necessary details
+            const matches = action.match(/(Pick Up|Drop Off) (\d+) SCU of (\w+) \(Destination: ([^)]+)\) \(Mission ID: (\d+)\)/) ||
+                            action.match(/(Pick Up|Drop Off) (\d+) SCU of (\w+) \(Origin: ([^)]+)\) \(Mission ID: (\d+)\)/);
+            if (matches) {
+                const [, actionType, quantity, cargoType, location, missionID] = matches;
+
+                // Include quantity in the uniqueness key to prevent duplicates
+                const key = `${missionID}-${cargoType}-${location}-${quantity}`;
+
+                // If this exact action has already been processed, skip it
+                if (uniqueEntries.has(key)) {
+                    return; // Duplicate found; skip processing
+                }
+
+                uniqueEntries.add(key); // Mark this action as processed
+
+                // Initialize cargo type in summary if not present
+                if (!summaryByCargoType[cargoType]) {
+                    summaryByCargoType[cargoType] = {
+                        total: 0,
+                        breakdown: []
+                    };
+                }
+
+                // Update total SCU for the cargo type
+                summaryByCargoType[cargoType].total += parseInt(quantity);
+
+                // Add breakdown entry for this unique action
+                summaryByCargoType[cargoType].breakdown.push({
+                    quantity: parseInt(quantity),
+                    missionID: missionID,
+                    location: location
+                });
+            }
+        });
+
+        return summaryByCargoType;
+    }
+}
+        // ========================
+        // Update Loading Bar Function
+        // ========================
+
+        /**
+         * Updates the loading bar, displays the best route so far, and updates the route length graph.
+         *
+         * @param {string} progress - The progress percentage as a string.
+         * @param {Array} bestRouteSoFar - The current best route.
+         * @param {Object} startingLocation - The starting location object.
+         * @param {number} generation - Current generation number.
+         * @param {number} currentRouteLength - Total distance of the best route so far.
+         */
+         function updateLoadingBar(progress, bestRouteSoFar, startingLocation, generation, currentRouteLength) {
+            const loadingBar = document.getElementById("loadingBar");
+            loadingBar.style.width = progress + "%";
+    
+            // Update the map with the best route so far
+            updateRouteOnMap(bestRouteSoFar, startingLocation, true); // 'true' indicates a temporary route
+    
+            // Update the Route Length Graph
+            if (generation && currentRouteLength) {
+                Plotly.extendTraces('routeLengthGraph', {
+                    x: [[generation]],
+                    y: [[currentRouteLength]]
+                }, [0]);
+    
+                // Optionally, adjust the layout to fit new data
+                Plotly.relayout('routeLengthGraph', {
+                    'xaxis.range': [0, Math.max(50, generation + 10)],
+                    'yaxis.range': [0, Math.max(1000, currentRouteLength + 500)]
+                });
+            }
+        }
+// ========================
+    // New Function to Split Events by Cargo Capacity
+    // ========================
+
+    /**
+     * Splits cargo entries in events that exceed the cargo capacity into smaller chunks.
+     *
+     * @param {Array} events - Original array of events (pickups and drop-offs).
+     * @param {number} cargoCapacity - Maximum cargo capacity of the ship.
+     * @returns {Array} - New array of events with split cargo entries.
+     */
+     function splitEventsByCargoCapacity(events, cargoCapacity) {
+    const newEvents = [];
+
+    events.forEach(event => {
+        if (event.type === 'pickup') {
+            event.cargo.forEach(cargo => {
+                let quantityRemaining = cargo.quantity;
+                while (quantityRemaining > 0) {
+                    const splitQuantity = Math.min(quantityRemaining, cargoCapacity);
+                    const newPickupID = uniqueID();
+                    const newDropoffID = uniqueID();
+
+                    // Create split pickup event
+                    const splitPickupEvent = {
+                        id: newPickupID,
+                        type: 'pickup',
+                        location: event.location, // Use event.location for pickup
+                        cargo: [{ type: cargo.type, quantity: splitQuantity, destination: cargo.destination }],
+                        correspondingDropOffID: newDropoffID,
+                        missionID: event.missionID,
+                    };
+
+                    // Create corresponding drop-off event
+                    const splitDropoffEvent = {
+                        id: newDropoffID,
+                        type: 'dropoff',
+                        location: cargo.destination, // Use cargo.destination for drop-off
+                        cargo: [{ type: cargo.type, quantity: splitQuantity, origin: event.location }],
+                        correspondingPickupID: newPickupID,
+                        missionID: event.missionID,
+                    };
+
+                    newEvents.push(splitPickupEvent);
+                    newEvents.push(splitDropoffEvent);
+
+                    quantityRemaining -= splitQuantity;
+                }
+            });
+        }
+    });
+
+    return newEvents;
+}
+    
+async function calculateOptimalRoute(
+    startingLocation, events, allPOIs,
+    populationSize = 100, generations = 200,
+    mutationRate = 0.1, progressCallback, cargoCapacity
+) {
+    // Optional: Set a fixed seed for reproducibility
+    // Math.seedrandom('fixed-seed-value');
+
+    // Preprocess events to split overloaded cargo entries
+    const splitEvents = splitEventsByCargoCapacity(events, cargoCapacity);
+    console.log("Events after splitting:", splitEvents);
+
+    // Initialize parameters
+    populationSize = populationSize || 100;
+    generations = generations || 200;
+    mutationRate = mutationRate || 0.1;
+
+    // Precompute POI Map and Distance Map
+    const poiMap = createPOIMap(allPOIs);
+    const distanceMap = precomputeDistanceMap(allPOIs);
+
+    // Generate initial population
+    let population = generateInitialPopulation(populationSize, splitEvents);
+
+    let bestRoute = null;
+    let bestFitness = -Infinity;
+    let routeLengths = []; // To store route lengths over generations
+
+    for (let generation = 0; generation < generations; generation++) {
+        console.log(`Generation ${generation + 1}/${generations}`);
+
+        // Evaluate fitness of population
+        const fitnessValues = [];
+        for (let route of population) {
+            const { fitness, totalDistance } = calculateFitness(route, startingLocation, poiMap, distanceMap, cargoCapacity);
+            fitnessValues.push({ route, fitness, totalDistance });
+        }
+
+        // Sort population by fitness (higher fitness is better)
+        fitnessValues.sort((a, b) => b.fitness - a.fitness);
+        population = fitnessValues.map(item => item.route);
+
+        // Update best route
+        if (fitnessValues[0].fitness > bestFitness) {
+            bestFitness = fitnessValues[0].fitness;
+            bestRoute = fitnessValues[0].route;
+            const currentRouteLength = fitnessValues[0].totalDistance;
+            routeLengths.push(currentRouteLength); // Store route length
+
+
+            // Report progress
+            const progress = ((generation + 1) / generations) * 100;
+            if (progressCallback) {
+                progressCallback(progress.toFixed(2), bestRoute, startingLocation, generation + 1, currentRouteLength);
+            }
+
+            // Allow UI updates
+            await sleep(0);
+        }
+
+        // Selection with elitism
+        const eliteCount = Math.floor(populationSize * 0.1);
+        const selectedRoutes = selection(population, fitnessValues, eliteCount);
+
+        // Crossover
+        let offspring = crossoverPopulation(selectedRoutes);
+
+        // Mutation
+        for (let i = 0; i < offspring.length; i++) {
+            offspring[i] = mutate(offspring[i], mutationRate);
+        }
+
+        // Repair offspring to ensure validity
+        for (let i = 0; i < offspring.length; i++) {
+            offspring[i] = repairRoute(offspring[i], splitEvents, poiMap, cargoCapacity);
+        }
+
+        // Create new population
+        population = [...selectedRoutes, ...offspring];
+
+        // Optional: Limit population size if necessary
+        if (population.length > populationSize) {
+            population = population.slice(0, populationSize);
+        }
+    }
+
+    return { 
+        optimalRoute: bestRoute,
+        poiMap: poiMap,
+        distanceMap: distanceMap,
+        routeLengths: routeLengths
+    };
+}
+
+   // ========================
+    // Update the Route Execution Logic
+    // ========================
+
+    /**
+     * Simulates the execution of a route, tracking cargo loading and unloading.
+     *
+     * @param {Array} route - The optimal route to execute.
+     * @param {Object} startingLocation - The starting location object.
+     * @param {number} cargoCapacity - The maximum cargo capacity.
+     * @returns {Array} - The executed route with detailed actions.
+     */
+     function executeRoute(route, startingLocation, cargoCapacity) {
+        let currentLocationName = startingLocation.name;
+        let currentCargoLoad = 0;
+        let cargoOnBoard = {};
+        let executedRoute = []; // Stores detailed info for each step
+    
+        console.log("Starting route execution from:", currentLocationName);
+    
+        for (let event of route) {
+            const eventLocationName = event.location;
+            let actions = [];
+    
+            console.log(`\nArrived at: ${eventLocationName}`);
+    
+            // At each location, attempt to drop off any cargo destined here
+            const cargoToDropOffKeys = Object.keys(cargoOnBoard).filter(key => key.endsWith(`-${eventLocationName}`));
+            let droppedOffCargo = [];
+    
+            cargoToDropOffKeys.forEach(key => {
+                const quantity = Number(cargoOnBoard[key]); // Ensure quantity is a number
+                if (isNaN(quantity)) {
+                    console.warn(`Invalid quantity for cargo ${key}. Skipping drop-off.`);
+                    return;
+                }
+                currentCargoLoad -= quantity;
+                const [cargoType, destination] = key.split('-');
+                const missionID = cargoOnBoard[`mission-${key}`];
+                droppedOffCargo.push({ type: cargoType, quantity: quantity, missionID: missionID, origin: cargoOnBoard[`origin-${key}`] });
+                delete cargoOnBoard[key];
+                delete cargoOnBoard[`mission-${key}`];
+                delete cargoOnBoard[`origin-${key}`];
+                console.log(`Dropped off ${quantity} SCU of ${cargoType} at ${eventLocationName}`);
+                actions.push(`Drop Off ${quantity} SCU of ${cargoType} (Origin: ${droppedOffCargo[droppedOffCargo.length - 1].origin}) (Mission ID: ${missionID})`);
+            });
+    
+            // Attempt to pick up cargo if this event is a pickup
+            if (event.type === 'pickup') {
+                const cargoToPickUp = event.cargo.reduce((sum, c) => sum + c.quantity, 0);
+    
+                console.log(`Attempting to pick up ${cargoToPickUp} SCU of cargo.`);
+    
+                if (currentCargoLoad + cargoToPickUp <= cargoCapacity) {
+                    currentCargoLoad += cargoToPickUp;
+    
+                    // Add cargo to cargoOnBoard
+                    event.cargo.forEach(c => {
+                        const key = `${c.type}-${c.destination}`;
+                        cargoOnBoard[key] = (cargoOnBoard[key] || 0) + Number(c.quantity);
+                        cargoOnBoard[`mission-${key}`] = event.missionID;
+                        cargoOnBoard[`origin-${key}`] = event.location;
+                        console.log(`Picked up ${c.quantity} SCU of ${c.type} for destination ${c.destination}`);
+    
+                        // Include mission ID
+                        const missionID = event.missionID;
+                        actions.push(`Pick Up ${c.quantity} SCU of ${c.type} (Destination: ${c.destination}) (Mission ID: ${missionID})`);
+                    });
+                } else {
+                    // Cannot pick up now; plan to pick up later
+                    actions.push(`Cannot pick up cargo due to capacity constraints.`);
+                    console.warn(`Cannot pick up cargo at ${eventLocationName}: capacity exceeded.`);
+                    // Optionally, handle rescheduling the pickup
+                }
+            }
+    
+            // Record the actions at this location
+            if (actions.length > 0) {
+                executedRoute.push({
+                    location: eventLocationName,
+                    actions: actions,
+                    cargoLoad: currentCargoLoad
+                });
+                console.log(`Actions at ${eventLocationName}: ${actions.join(" | ")}`);
+                console.log(`Current Cargo Load: ${currentCargoLoad} / ${cargoCapacity} SCU`);
+            } else {
+                console.log(`No actions at ${eventLocationName}. Current Cargo Load: ${currentCargoLoad} / ${cargoCapacity} SCU`);
+            }
+    
+            // Update current location
+            currentLocationName = eventLocationName;
+        }
+    
+        console.log("Route execution completed.");
+        return executedRoute;
+    }
+
+
+/**
+ * Sleeps for a specified number of milliseconds.
+ *
+ * @param {number} ms - Milliseconds to sleep.
+ * @returns {Promise} - Resolves after the specified time.
+ */
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Creates a map of POIs for efficient lookups.
+ *
+ * @param {Array} allPOIs - Array of all Points of Interest.
+ * @returns {Map} - Map with POI names as keys and POI objects as values.
+ */
+function createPOIMap(allPOIs) {
+    const poiMap = new Map();
+    allPOIs.forEach(poi => {
+        poiMap.set(poi.name, poi);
+    });
+    return poiMap;
+}
+
+/**
+ * Precomputes the distance between all pairs of POIs.
+ *
+ * @param {Array} allPOIs - Array of all Points of Interest.
+ * @returns {Map} - Nested Map where distanceMap.get(poi1).get(poi2) gives the distance.
+ */
+function precomputeDistanceMap(allPOIs) {
+    const distanceMap = new Map();
+    allPOIs.forEach(poi1 => {
+        distanceMap.set(poi1.name, new Map());
+        allPOIs.forEach(poi2 => {
+            const dx = poi2.x - poi1.x;
+            const dy = poi2.y - poi1.y;
+            distanceMap.get(poi1.name).set(poi2.name, Math.sqrt(dx * dx + dy * dy));
+        });
+    });
+    return distanceMap;
+}
+
+/**
+ * Generates the initial population for the Genetic Algorithm.
+ *
+ * @param {number} populationSize - Size of the population.
+ * @param {Array} events - Array of all pickup and dropoff events.
+ * @returns {Array} - Array of routes, each route is an array of events.
+ */
+function generateInitialPopulation(populationSize, events) {
+    const population = new Array(populationSize);
+    for (let i = 0; i < populationSize; i++) {
+        population[i] = createValidRoute(events);
+    }
+    return population;
+}
+
+/**
+ * Creates a valid route by shuffling events while maintaining constraints.
+ *
+ * @param {Array} events - Array of all pickup and dropoff events.
+ * @returns {Array} - A valid route as an array of events.
+ */
+function createValidRoute(events) {
+    // Shuffle events to create variability
+    const shuffledEvents = shuffleArray(events);
+
+    // Build the route ensuring that pickups occur before their corresponding dropoffs
+    const route = [];
+    const pickupsDone = new Set();
+
+    shuffledEvents.forEach(event => {
+        if (event.type === 'pickup') {
+            route.push(event);
+            pickupsDone.add(event.id);
+        } else if (event.type === 'dropoff') {
+            // Ensure that pickup has been included before dropoff
+            if (pickupsDone.has(event.correspondingPickupID)) {
+                route.push(event);
+            } else {
+                // Add the corresponding pickup first if it hasn't been included
+                const pickupEvent = events.find(e => e.id === event.correspondingPickupID);
+                if (pickupEvent) {
+                    route.push(pickupEvent);
+                    pickupsDone.add(pickupEvent.id);
+                }
+                route.push(event);
+            }
+        }
+    });
+
+    return route;
+}
+
+/**
+ * Calculates the fitness of a route.
+ *
+ * @param {Array} route - The route to evaluate.
+ * @param {Object} startingLocation - The starting location object.
+ * @param {Map} poiMap - Map of POIs for lookup.
+ * @param {Map} distanceMap - Precomputed distance map between POIs.
+ * @param {number} cargoCapacity - Maximum cargo capacity.
+ * @returns {Object} - Contains fitness value and total distance.
+ */
+function calculateFitness(route, startingLocation, poiMap, distanceMap, cargoCapacity) {
+    let totalDistance = 0;
+    let currentLocationName = startingLocation.name;
+    let currentCargoLoad = 0;
+    let cargoLoadOverCapacityPenalty = 0;
+    let pickupsDone = new Set();
+    let cargoOnBoard = {};
+
+    for (let event of route) {
+        const eventLocationName = event.location;
+        const eventDistance = distanceMap.get(currentLocationName).get(eventLocationName);
+        totalDistance += eventDistance;
+
+        if (event.type === 'pickup') {
+            // Calculate total cargo to pick up
+            const cargoToPickUp = event.cargo.reduce((sum, c) => sum + c.quantity, 0);
+
+            if (currentCargoLoad + cargoToPickUp <= cargoCapacity) {
+                currentCargoLoad += cargoToPickUp;
+                pickupsDone.add(event.id);
+                // Add cargo to cargoOnBoard
+                event.cargo.forEach(c => {
+                    const key = `${c.type}-${c.destination}`;
+                    cargoOnBoard[key] = (cargoOnBoard[key] || 0) + c.quantity;
+                });
+            } else {
+                // Cannot pick up now; plan to revisit later
+                cargoLoadOverCapacityPenalty += 1000; // Penalty for not picking up
+            }
+        } else if (event.type === 'dropoff') {
+            if (pickupsDone.has(event.correspondingPickupID)) {
+                // Calculate total cargo to drop off
+                const cargoToDropOff = event.cargo.reduce((sum, c) => sum + c.quantity, 0);
+                currentCargoLoad -= cargoToDropOff;
+                // Remove cargo from cargoOnBoard
+                event.cargo.forEach(c => {
+                    const key = `${c.type}-${event.location}`;
+                    cargoOnBoard[key] = (cargoOnBoard[key] || 0) - c.quantity;
+                });
+            } else {
+                // Need to pick up cargo before dropping off
+                cargoLoadOverCapacityPenalty += 1000; // Penalty for invalid drop-off
+            }
+        }
+
+        currentLocationName = eventLocationName;
+    }
+
+    // Additional penalty if not all cargo is delivered
+    const undeliveredCargo = Object.values(cargoOnBoard).reduce((sum, qty) => sum + Math.abs(qty), 0);
+    cargoLoadOverCapacityPenalty += undeliveredCargo * 1000;
+
+    const fitness = 1 / (totalDistance + cargoLoadOverCapacityPenalty);
+
+    return { fitness, totalDistance };
+}
+
+/**
+ * Selection function with elitism.
+ *
+ * @param {Array} population - Current population of routes.
+ * @param {Array} fitnessValues - Array of objects containing route and its fitness.
+ * @param {number} eliteCount - Number of top individuals to retain.
+ * @returns {Array} - Selected routes for the next generation.
+ */
+function selection(population, fitnessValues, eliteCount = 10) {
+    // Assumes fitnessValues are sorted descending
+    const elites = population.slice(0, eliteCount);
+    const selectedSize = Math.floor(population.length / 2) - eliteCount;
+    const selected = population.slice(eliteCount, eliteCount + selectedSize);
+    return [...elites, ...selected];
+}
+
+/**
+ * Performs crossover on the selected routes to produce offspring.
+ *
+ * @param {Array} selectedRoutes - Routes selected for breeding.
+ * @returns {Array} - Offspring routes.
+ */
+function crossoverPopulation(selectedRoutes) {
+    const offspring = [];
+    const len = selectedRoutes.length;
+    for (let i = 0; i < len - 1; i += 2) {
+        const parent1 = selectedRoutes[i];
+        const parent2 = selectedRoutes[i + 1];
+        const [child1, child2] = crossover(parent1, parent2);
+        offspring.push(child1, child2);
+    }
+
+    // If odd number of parents, clone the last one
+    if (len % 2 !== 0) {
+        offspring.push([...selectedRoutes[len - 1]]);
+    }
+
+    return offspring;
+}
+
+/**
+ * Performs crossover between two parent routes.
+ *
+ * @param {Array} parent1 - First parent route.
+ * @param {Array} parent2 - Second parent route.
+ * @returns {Array} - Two offspring routes.
+ */
+function crossover(parent1, parent2) {
+    // Implement Precedence Preserving Crossover (PPX)
+    const child1 = precedencePreservingCrossover(parent1, parent2);
+    const child2 = precedencePreservingCrossover(parent2, parent1);
+    return [child1, child2];
+}
+
+/**
+ * Precedence Preserving Crossover (PPX) implementation.
+ *
+ * @param {Array} parent1 - Parent route.
+ * @param {Array} parent2 - Parent route.
+ * @returns {Array} - Offspring route.
+ */
+function precedencePreservingCrossover(parent1, parent2) {
+    const child = [];
+    const remainingEvents = new Set(parent1.map(event => event.id));
+    const parent2Order = new Map(parent2.map((event, index) => [event.id, index]));
+
+    const sortedEvents = Array.from(remainingEvents).sort((a, b) => parent2Order.get(a) - parent2Order.get(b));
+
+    sortedEvents.forEach(eventId => {
+        const event = parent1.find(e => e.id === eventId);
+        if (event) child.push(event);
+    });
+
+    return child;
+}
+
+/**
+ * Mutates a route by swapping two events based on the mutation rate.
+ *
+ * @param {Array} route - The route to mutate.
+ * @param {number} mutationRate - Probability of mutation.
+ * @returns {Array} - Mutated route.
+ */
+function mutate(route, mutationRate) {
+    if (Math.random() >= mutationRate) return route; // No mutation
+
+    const mutatedRoute = route.slice(); // Shallow copy
+
+    const len = mutatedRoute.length;
+    const index1 = Math.floor(Math.random() * len);
+    let index2 = Math.floor(Math.random() * len);
+
+    // Ensure different indices
+    while (index2 === index1) {
+        index2 = Math.floor(Math.random() * len);
+    }
+
+    // Swap events
+    [mutatedRoute[index1], mutatedRoute[index2]] = [mutatedRoute[index2], mutatedRoute[index1]];
+
+    // Ensure pickup before dropoff
+    const event1 = mutatedRoute[index1];
+    const event2 = mutatedRoute[index2];
+
+    if (event1.type === 'dropoff' && !mutatedRoute.slice(0, index1).some(e => e.id === event1.correspondingPickupID)) {
+        // Swap back if invalid
+        [mutatedRoute[index1], mutatedRoute[index2]] = [mutatedRoute[index2], mutatedRoute[index1]];
+    }
+
+    if (event2.type === 'dropoff' && !mutatedRoute.slice(0, index2).some(e => e.id === event2.correspondingPickupID)) {
+        // Swap back if invalid
+        [mutatedRoute[index1], mutatedRoute[index2]] = [mutatedRoute[index2], mutatedRoute[index1]];
+    }
+
+    return mutatedRoute;
+}
+
+ // ========================
+    // Additional Utility Functions
+    // ========================
+
+    /**
+     * Ensures that all drop-offs have their corresponding pickups already in the route.
+     * If not, moves the drop-off to a later position.
+     *
+     * @param {Array} route - The route to evaluate and repair.
+     * @param {Array} events - Original array of events.
+     * @param {Map} poiMap - Map of POIs for lookup.
+     * @param {number} cargoCapacity - Maximum cargo capacity.
+     * @returns {Array} - Repaired route.
+     */
+     function repairRoute(route, events, poiMap, cargoCapacity) {
+        const repairedRoute = [];
+        const pickupsDone = new Set();
+        let currentCargoLoad = 0;
+        let cargoOnBoard = {};
+    
+        for (let event of route) {
+            if (event.type === 'pickup') {
+                // Calculate total cargo to pick up
+                const cargoToPickUp = event.cargo.reduce((sum, c) => sum + c.quantity, 0);
+    
+                if (currentCargoLoad + cargoToPickUp <= cargoCapacity) {
+                    currentCargoLoad += cargoToPickUp;
+                    pickupsDone.add(event.id);
+                    repairedRoute.push(event);
+                    // Add cargo to cargoOnBoard
+                    event.cargo.forEach(c => {
+                        const key = `${c.type}-${c.destination}`;
+                        cargoOnBoard[key] = (cargoOnBoard[key] || 0) + c.quantity;
+                    });
+                } else {
+                    // Plan to pick up later; move the pickup event to later in the route
+                    route.push(event);
+                }
+            } else if (event.type === 'dropoff') {
+                const pickupDone = pickupsDone.has(event.correspondingPickupID);
+                if (pickupDone) {
+                    // Calculate total cargo to drop off
+                    const cargoToDropOff = event.cargo.reduce((sum, c) => sum + c.quantity, 0);
+                    currentCargoLoad -= cargoToDropOff;
+                    repairedRoute.push(event);
+                    // Remove cargo from cargoOnBoard
+                    event.cargo.forEach(c => {
+                        const key = `${c.type}-${event.location}`;
+                        cargoOnBoard[key] = (cargoOnBoard[key] || 0) - c.quantity;
+                    });
+                } else {
+                    // Move the dropoff event to later in the route
+                    route.push(event);
+                }
+            }
+        }
+    
+        return repairedRoute;
+    }
+/**
+ * Shuffles an array in place using the Fisher-Yates algorithm.
+ *
+ * @param {Array} array - The array to shuffle.
+ * @returns {Array} - Shuffled array.
+ */
+function shuffleArray(array) {
+    const newArr = array.slice();
+    for (let i = newArr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+    }
+    return newArr;
+}
+
+/**
+ * Calculates the total distance of a route.
+ *
+ * @param {Array} route - The route to evaluate.
+ * @param {Object} startingLocation - The starting location object.
+ * @param {Map} poiMap - Map of POIs for lookup.
+ * @param {Map} distanceMap - Precomputed distance map between POIs.
+ * @returns {number} - Total distance of the route.
+ */
+function calculateTotalDistance(route, startingLocation, poiMap, distanceMap) {
+    let totalDistance = 0;
+    let currentLocationName = startingLocation.name;
+
+    for (let event of route) {
+        const eventLocationName = event.location;
+        const eventDistance = distanceMap.get(currentLocationName).get(eventLocationName);
+        totalDistance += eventDistance;
+        currentLocationName = eventLocationName;
+    }
+
+    return totalDistance;
+}
+
+/**
+ * Generates a route summary from the executed route.
+ *
+ * @param {Array} executedRoute - The executed route with actions and cargo loads.
+ * @returns {Array} - The formatted route summary.
+ */
+function generateRouteSummaryFromExecution(executedRoute) {
+    const summary = [];
+
+    executedRoute.forEach((step, index) => {
+        summary.push({
+            stop: index + 1,
+            location: step.location,
+            actions: step.actions, // Array of action strings
+            cargoLoad: step.cargoLoad
+        });
+    });
+
+    return summary;
+}
+
+/**
+ * Calculates the total reward from all missions.
+ *
+ * @param {Array} missions - Array of mission objects.
+ * @returns {number} - Total reward accumulated.
+ */
+function calculateTotalReward(missions) {
+    let total = 0;
+    missions.forEach((mission) => {
+        total += mission.rewardAmount;
+    });
+    return total;
+}
+
+
+/**
+ * Formats the mission type for display.
+ *
+ * @param {string} type - The mission type identifier.
+ * @returns {string} - Formatted mission type.
+ */
+function formatMissionType(type) {
+    if (type === "direct") return "Direct";
+    if (type === "multipleDropOff") return "Multiple Drop Off";
+    if (type === "multiplePickUp") return "Multiple Pick Up";
+    return "";
+}
+
+
+
+
+
+</script>
+</body>
+</html>

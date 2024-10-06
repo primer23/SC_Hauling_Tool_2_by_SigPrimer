@@ -1534,11 +1534,12 @@ function addCargoEntry(container) {
     const cargoEntryDiv = document.createElement("div");
     cargoEntryDiv.className = "cargo-entry";
 
-    // Cargo Type Input
+    // Cargo Type Input (modified to allow spaces and brackets)
     const cargoTypeInput = document.createElement("input");
     cargoTypeInput.type = "text";
     cargoTypeInput.className = "cargo-type";
-    cargoTypeInput.placeholder = "Cargo Type";
+    cargoTypeInput.placeholder = "Cargo Type (e.g., Iron (ore), processed food)";
+    cargoTypeInput.pattern = "[a-zA-Z0-9() ]+"; // Adjusted pattern to allow spaces and brackets
 
     // Quantity Input
     const cargoQuantityInput = document.createElement("input");
@@ -2097,9 +2098,14 @@ function addMissionToList(mission) {
         mission.type
     )}<br>`;
     missionText += `<strong>Cargo:</strong><br>`;
+    
+    // Use proper escaping for special characters
     mission.cargoEntries.forEach((entry) => {
-        missionText += `&nbsp;&nbsp;- ${entry.quantity} SCU of ${entry.type} from ${entry.from} to ${entry.to}<br>`;
+        // Use encodeURIComponent to ensure correct rendering of special characters
+        let cargoTypeEscaped = entry.type.replace(/[<>]/g, (c) => ({ '<': '&lt;', '>': '&gt;' }[c]));
+        missionText += `&nbsp;&nbsp;- ${entry.quantity} SCU of ${cargoTypeEscaped} from ${entry.from} to ${entry.to}<br>`;
     });
+    
     missionText += `<strong>Reward:</strong> ${mission.rewardAmount} Credits<br>`;
 
     li.innerHTML = missionText;
@@ -2108,23 +2114,14 @@ function addMissionToList(mission) {
     const deleteButton = document.createElement("button");
     deleteButton.innerText = "Delete Mission";
     deleteButton.className = "delete-mission-button"; // Assign a class for styling
-    deleteButton.style.marginTop = "10px"; // Add some spacing
-    deleteButton.style.backgroundColor = "#E74C3C"; // Red background
-    deleteButton.style.color = "#fff"; // White text
-    deleteButton.style.padding = "5px 10px";
-    deleteButton.style.border = "none";
-    deleteButton.style.borderRadius = "3px";
-    deleteButton.style.cursor = "pointer";
-    deleteButton.style.fontSize = "12px";
-    deleteButton.style.fontWeight = "bold";
 
     // Add Event Listener to Delete Button
-    deleteButton.addEventListener("click", () => {
+    deleteButton.addEventListener("click", function () {
         deleteMission(mission.missionID, li);
     });
 
-    // Append Delete Button to <li>
     li.appendChild(deleteButton);
+    missionList.appendChild(li);
 
     // Append <li> to mission list
     missionList.appendChild(li);
@@ -2887,10 +2884,10 @@ function handleGAResult(optimalRoute, poiMap, distanceMap, routeLengths) {
                     const cargoDetail = document.createElement("div");
                     cargoDetail.className = "cargo-detail";
 
-                    // Create checkbox
+                   // Create checkbox
                     const checkbox = document.createElement("input");
                     checkbox.type = "checkbox";
-                    checkbox.id = `mission-${entry.missionID}-cargo-${cargoType}-${entry.location}`;
+                    checkbox.id = `mission-${entry.missionID}-cargo-${encodeURIComponent(cargoType)}-${entry.location}`;
                     checkbox.className = "cargo-checkbox";
 
                     // Create label
@@ -2932,7 +2929,7 @@ function handleGAResult(optimalRoute, poiMap, distanceMap, routeLengths) {
                     // Create checkbox
                     const checkbox = document.createElement("input");
                     checkbox.type = "checkbox";
-                    checkbox.id = `mission-${entry.missionID}-cargo-${cargoType}-${entry.origin}`;
+                    checkbox.id = `mission-${entry.missionID}-cargo-${encodeURIComponent(cargoType)}-${entry.location}`;
                     checkbox.className = "cargo-checkbox";
 
                     // Create label
@@ -2966,46 +2963,46 @@ function handleGAResult(optimalRoute, poiMap, distanceMap, routeLengths) {
      * @param {Array} actions - Array of action strings
      * @returns {Object} - Grouped summary by cargo type
      */
-    function organizeSummary(actions) {
-        let summaryByCargoType = {};
-        const uniqueEntries = new Set(); // To track unique actions
+     function organizeSummary(actions) {
+    let summaryByCargoType = {};
+    const uniqueEntries = new Set(); // To track unique actions
 
-        actions.forEach((action) => {
-            // Enhanced regex to capture all necessary details
-            const matches = action.match(/(Pick Up|Drop Off) (\d+) SCU of (\w+) \(Destination: ([^)]+)\) \(Mission ID: (\d+)\)/) ||
-                            action.match(/(Pick Up|Drop Off) (\d+) SCU of (\w+) \(Origin: ([^)]+)\) \(Mission ID: (\d+)\)/);
-            if (matches) {
-                const [, actionType, quantity, cargoType, location, missionID] = matches;
+    actions.forEach((action) => {
+        // Updated regex patterns to capture cargo types with spaces and special characters
+        const matches = action.match(/(Pick Up|Drop Off) (\d+) SCU of (.+?) \(Destination: ([^)]+)\) \(Mission ID: (\d+)\)/) ||
+                        action.match(/(Pick Up|Drop Off) (\d+) SCU of (.+?) \(Origin: ([^)]+)\) \(Mission ID: (\d+)\)/);
+        if (matches) {
+            const [, actionType, quantity, cargoType, location, missionID] = matches;
 
-                // Include quantity in the uniqueness key to prevent duplicates
-                const key = `${missionID}-${cargoType}-${location}-${quantity}`;
+            // Include quantity in the uniqueness key to prevent duplicates
+            const key = `${missionID}-${cargoType}-${location}-${quantity}`;
 
-                // If this exact action has already been processed, skip it
-                if (uniqueEntries.has(key)) {
-                    return; // Duplicate found; skip processing
-                }
-
-                uniqueEntries.add(key); // Mark this action as processed
-
-                // Initialize cargo type in summary if not present
-                if (!summaryByCargoType[cargoType]) {
-                    summaryByCargoType[cargoType] = {
-                        total: 0,
-                        breakdown: []
-                    };
-                }
-
-                // Update total SCU for the cargo type
-                summaryByCargoType[cargoType].total += parseInt(quantity);
-
-                // Add breakdown entry for this unique action
-                summaryByCargoType[cargoType].breakdown.push({
-                    quantity: parseInt(quantity),
-                    missionID: missionID,
-                    location: location
-                });
+            // If this exact action has already been processed, skip it
+            if (uniqueEntries.has(key)) {
+                return; // Duplicate found; skip processing
             }
-        });
+
+            uniqueEntries.add(key); // Mark this action as processed
+
+            // Initialize cargo type in summary if not present
+            if (!summaryByCargoType[cargoType]) {
+                summaryByCargoType[cargoType] = {
+                    total: 0,
+                    breakdown: []
+                };
+            }
+
+            // Update total SCU for the cargo type
+            summaryByCargoType[cargoType].total += parseInt(quantity);
+
+            // Add breakdown entry for this unique action
+            summaryByCargoType[cargoType].breakdown.push({
+                quantity: parseInt(quantity),
+                missionID: missionID,
+                location: location
+            });
+        }
+    });
 
         return summaryByCargoType;
     }
